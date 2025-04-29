@@ -1,10 +1,7 @@
 package org.example.backend.domain.user.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,11 +27,13 @@ public class User {
 
     private Date birthday;
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     private String phone;
 
     private String address;
 
+    @Enumerated(EnumType.STRING)
     private LoginType loginType;
 }

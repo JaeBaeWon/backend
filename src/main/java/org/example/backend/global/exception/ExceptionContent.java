@@ -1,4 +1,4 @@
-package org.example.backend.exception;
+package org.example.backend.global.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

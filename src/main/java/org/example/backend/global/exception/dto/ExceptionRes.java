@@ -1,4 +1,4 @@
-package org.example.backend.exception.dto;
+package org.example.backend.global.exception.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

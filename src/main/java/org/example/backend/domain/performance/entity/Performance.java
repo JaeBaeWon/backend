@@ -1,9 +1,6 @@
 package org.example.backend.domain.performance.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +22,7 @@ public class Performance {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private PerformanceCategory category;
 
     private String performCode;
@@ -45,5 +43,6 @@ public class Performance {
 
     private int remainSeats;
 
+    @Enumerated(EnumType.STRING)
     private PerformanceStatus performanceStatus;
 }

@@ -19,6 +19,7 @@ public class Refund {
 
     private int refundAmount;
 
+    @Enumerated(EnumType.STRING)
     private RefundStatus refundStatus;
 
     private String refundReason;

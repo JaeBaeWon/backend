@@ -21,8 +21,10 @@ public class Payment {
 
     private int paymentAmount;
 
+    @Enumerated(EnumType.STRING)
     private PayType payType;
 
+    @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
     private Date paymentDate;
