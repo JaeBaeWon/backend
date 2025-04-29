@@ -1,4 +1,4 @@
-package org.example.backend.domain.show.entity;
+package org.example.backend.domain.performance.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,26 +16,26 @@ import java.util.Date;
 @Builder
 @Getter
 @Entity
-public class Show {
+public class Performance {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long showId;
+    private Long performId;
 
     private String title;
 
     private String description;
 
-    private ShowCategory category;
+    private PerformanceCategory category;
 
-    private String showCode;
+    private String performCode;
 
-    private Date showStartAt;
+    private Date performStartAt;
 
-    private Date showEndAt;
+    private Date performEndAt;
 
     private String location;
 
-    private String showImg;
+    private String performImg;
 
     private int price;
 
@@ -45,5 +45,5 @@ public class Show {
 
     private int remainSeats;
 
-    private ShowStatus showStatus;
+    private PerformanceStatus performanceStatus;
 }

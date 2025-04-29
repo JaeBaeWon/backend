@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.backend.domain.seat.entity.Seat;
-import org.example.backend.domain.show.entity.Show;
+import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.user.entity.User;
 
 @AllArgsConstructor
@@ -28,8 +28,8 @@ public class Reservation {
     private User userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "show_id")
-    private Show showId;
+    @JoinColumn(name = "performance_id")
+    private Performance performanceId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")

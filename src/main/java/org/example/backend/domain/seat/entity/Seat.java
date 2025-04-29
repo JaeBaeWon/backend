@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.backend.domain.show.entity.Show;
+import org.example.backend.domain.performance.entity.Performance;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,6 +24,6 @@ public class Seat {
     private boolean seatReserved;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "show_id")
-    private Show showId;
+    @JoinColumn(name = "performance_id")
+    private Performance performanceId;
 }
