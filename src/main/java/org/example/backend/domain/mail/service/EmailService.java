@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat; // SimpleDateFormat
+import java.time.LocalDateTime;
 import java.util.Date; // Date
 import jakarta.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
@@ -61,7 +62,7 @@ public class EmailService {
 
     //예매 오픈 알람 메일
     public void sendOpenAlarmMail(String email, String username, String title,
-                                  Date openDate, String reservationUrl) throws MessagingException {
+                                  LocalDateTime openDate, String reservationUrl) throws MessagingException {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

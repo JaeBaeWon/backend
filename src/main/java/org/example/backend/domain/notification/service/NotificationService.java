@@ -1,14 +1,14 @@
-package org.example.backend.domain.mail.service;
+package org.example.backend.domain.notification.service;
 
 import jakarta.mail.MessagingException;
 import lombok.Getter;
+import org.example.backend.domain.mail.service.EmailService;
 import org.example.backend.domain.notification.entity.Notification;
 import org.example.backend.domain.notification.repository.NotificationRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -25,7 +25,7 @@ public class NotificationService {
 
     @Scheduled(cron = "0 0 9 * * *")
     public void sendPerformanceNotifications() throws MessagingException {
-        Date now = new Date();
+        LocalDateTime now = LocalDateTime.now();
         List<Notification> notifications = notificationRepository.findAllWithUserAndPerformance();
 
         for (Notification notification : notifications) {
@@ -33,7 +33,7 @@ public class NotificationService {
                 continue;
             }
 
-            Date performStartAt = notification.getPerformance().getPerformStartAt();
+            LocalDateTime performStartAt = notification.getPerformance().getPerformStartAt();
             if (performStartAt == null) {
                 continue;
             }
@@ -52,15 +52,9 @@ public class NotificationService {
     }
 
     // 날짜 비교하는 메소드
-    private boolean isDaysBefore(Date performStartAt, Date now, int days) {
-        Calendar targetDate = Calendar.getInstance();
-        targetDate.setTime(now);
-        targetDate.add(Calendar.DAY_OF_YEAR, days);
+    private boolean isDaysBefore(LocalDateTime performStartAt, LocalDateTime now, int days) {
+        LocalDateTime targetDate = now.plusDays(days);
 
-        Calendar performanceDate = Calendar.getInstance();
-        performanceDate.setTime(performStartAt);
-
-        return targetDate.get(Calendar.YEAR) == performanceDate.get(Calendar.YEAR) &&
-                targetDate.get(Calendar.DAY_OF_YEAR) == performanceDate.get(Calendar.DAY_OF_YEAR);
+        return performStartAt.toLocalDate().isEqual(targetDate.toLocalDate());
     }
 }

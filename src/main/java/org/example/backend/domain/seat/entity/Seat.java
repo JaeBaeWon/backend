@@ -25,5 +25,5 @@ public class Seat {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
-    private Performance performanceId;
+    private Performance performance;
 }

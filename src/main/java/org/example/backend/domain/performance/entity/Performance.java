@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,9 +27,9 @@ public class Performance {
 
     private String performCode;
 
-    private Date performStartAt;
+    private LocalDateTime performStartAt;
 
-    private Date performEndAt;
+    private LocalDateTime performEndAt;
 
     private String location;
 
