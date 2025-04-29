@@ -26,5 +26,5 @@ public class Refund {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
-    private Payment paymentId;
+    private Payment payment;
 }

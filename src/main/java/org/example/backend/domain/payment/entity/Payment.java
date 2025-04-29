@@ -31,5 +31,5 @@ public class Payment {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
-    private Reservation reservationId;
+    private Reservation reservation;
 }
