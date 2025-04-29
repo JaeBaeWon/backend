@@ -1,9 +1,9 @@
-package org.example.backend.exception;
+package org.example.backend.global.exception;
 
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.example.backend.exception.dto.ExceptionRes;
+import org.example.backend.global.exception.dto.ExceptionRes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;

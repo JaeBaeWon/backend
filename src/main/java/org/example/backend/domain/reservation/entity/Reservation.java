@@ -21,6 +21,7 @@ public class Reservation {
 
     private String ticketId;
 
+    @Enumerated(EnumType.STRING)
     private ReservationStatus reservationStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
