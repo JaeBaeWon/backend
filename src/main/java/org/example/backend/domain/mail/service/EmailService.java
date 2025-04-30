@@ -1,6 +1,7 @@
 package org.example.backend.domain.mail.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,6 +15,12 @@ import java.io.UnsupportedEncodingException;
 
 @Service
 public class EmailService {
+
+    @Value("${spring.mail.username}")
+    private String MAIL_ADDRESS;
+
+    @Value("${spring.mail.properties.mail.smtp.name}")
+    private String MAIL_NAME;
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -44,7 +51,7 @@ public class EmailService {
                 + "</body></html>";
 
         try {
-            helper.setFrom(new InternetAddress("podopeaker@gmail.com", "podopeaker"));
+            helper.setFrom(new InternetAddress(MAIL_ADDRESS, MAIL_NAME));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -80,7 +87,7 @@ public class EmailService {
                 + "</body></html>";
 
         try {
-            helper.setFrom(new InternetAddress("podopeaker@gmail.com", "podopeaker"));
+            helper.setFrom(new InternetAddress(MAIL_ADDRESS, MAIL_NAME));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +124,7 @@ public class EmailService {
                 + "</body></html>";
 
         try {
-            helper.setFrom(new InternetAddress("podopeaker@gmail.com", "podopeaker"));
+            helper.setFrom(new InternetAddress(MAIL_ADDRESS, MAIL_NAME));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
