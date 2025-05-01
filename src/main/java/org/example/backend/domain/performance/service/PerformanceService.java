@@ -22,7 +22,7 @@ public class PerformanceService {
 
     // 통합 공연 목록 조회
     public Page<PerformRes> searchPerformances(String keyword, String category, String status, int page) {
-        PageRequest pageable = PageRequest.of(page, 6); // 한 페이지에 6개
+        PageRequest pageable = PageRequest.of(page, 8); // 한 페이지에 8개
         Page<Performance> performancePage = performanceRepository.searchPerformances(keyword, category, status, pageable);
 
         return performancePage.map(PerformRes::of);
@@ -30,7 +30,7 @@ public class PerformanceService {
 
     // 키워드로 공연 목록 조회
     public Page<PerformRes> getPerformListByKeyword(String keyword, int page) {
-        PageRequest pageable = PageRequest.of(page, 6); // 6개씩
+        PageRequest pageable = PageRequest.of(page, 8); // 8개씩
         Page<Performance> performancePage = performanceRepository.findByKeyword(keyword, pageable);
 
         return performancePage.map(PerformRes::of);
@@ -38,7 +38,7 @@ public class PerformanceService {
 
     // 카테고리로 공연 목록 조회
     public Page<PerformRes> getPerformListByCategory(String category, int page) {
-        PageRequest pageable = PageRequest.of(page, 6);
+        PageRequest pageable = PageRequest.of(page, 8);
         Page<Performance> performancePage = performanceRepository.findByCategory(category, pageable);
 
         return performancePage.map(PerformRes::of);
