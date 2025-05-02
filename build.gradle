@@ -44,6 +44,14 @@ dependencies {
 
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //secret-manager
+    //implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:3.0.2'
+
+
+    //prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {
