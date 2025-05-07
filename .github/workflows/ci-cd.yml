@@ -1,32 +1,37 @@
 name: CI/CD
 
 on:
-  workflow_dispatch:
-
-env:
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY }}
+  push:
+    branches:
+      - develop
+      - test
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: ✅ Checkout
-        uses: actions/checkout@v4.2.2
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
 
-      - name: ☕ Setup Java JDK
-        uses: actions/setup-java@v3.14.1
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🛠️ Setup application.yml
+      - name: application.yml 설정
         run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_MAIN }}" > src/main/resources/application.yml
+          cd ./src/main
 
-      - name: 📦 Cache Gradle
-        uses: actions/cache@v4.2.3
+          mkdir -p resources
+          cd resources
+          touch ./application.yml
+          echo "$APPLICATION_MAIN" > ./application.yml
+        env:
+          APPLICATION_MAIN: ${{ secrets.APPLICATION_MAIN }}
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
@@ -35,17 +40,37 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: 🔐 Grant gradlew permission
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: 🧱 Build with Gradle
+      - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: 🐳 Docker Build & Push
+      - name: Build and push Docker image
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
         run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker build -t $IMAGE_NAME .
-          docker push $IMAGE_NAME
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker build -t $DOCKER_USERNAME/${{secrets.DOCKER_REPOSITORY}} .
+          docker push $DOCKER_USERNAME/${{secrets.DOCKER_REPOSITORY}}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{secrets.EC2_HOST}}
+          username: ubuntu
+          key: ${{secrets.EC2_PRIVATE_KEY}}
+          port: 22
+          script: |
+            cd /home/ubuntu
+            sudo chmod +x deploy.sh
+            sudo ./deploy.sh
+            sudo docker image prune -af
