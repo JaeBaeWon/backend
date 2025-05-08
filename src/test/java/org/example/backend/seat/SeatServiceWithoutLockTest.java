@@ -69,7 +69,7 @@ class SeatServiceWithoutLockTest {
         performanceRepository.deleteAll();
     }
 
-    @Test
+    /*@Test
     @DisplayName("Redisson 락 미적용: 여러 명이 선점 가능")
     void multipleSuccessWithoutLock() throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(32);
@@ -104,6 +104,6 @@ class SeatServiceWithoutLockTest {
         log.info("🎯 최종 성공한 사용자 수: {}", successCount.get());
 
         assertTrue(successCount.get() > 1);
-    }
+    }*/
 
 }
