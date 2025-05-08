@@ -91,7 +91,8 @@ class SeatServiceWithLockTest {
                     if (seatService.tryLockSeat(seatId)) {
                         int current = successCount.incrementAndGet();
                         log.info("✅ [Thread-{}] 선점 성공! 현재 성공 수: {}", threadNum, current);
-                    } else {
+                    }
+                    else {
                         log.info("❌ [Thread-{}] 선점 실패 (락 획득 못함 or 이미 선점됨)", threadNum);
                     }
                 } catch (Exception e) {
