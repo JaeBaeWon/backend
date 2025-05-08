@@ -22,7 +22,9 @@ public enum ExceptionContent {
 
     NOT_FOUND_PERFORMANCE(NOT_FOUND, "유효하지 않은 공연입니다."),
 
-    NOT_FOUND_SEAT(NOT_FOUND, "유효하지 않은 좌석입니다.");
+    NOT_FOUND_SEAT(NOT_FOUND, "유효하지 않은 좌석입니다."),
+
+    ALREADY_RESERVED(FORBIDDEN, "이미 예약된 좌석입니다.");
 
 
     private final HttpStatus httpStatus;
