@@ -1,8 +1,6 @@
 package org.example.backend.domain.seat.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.example.backend.domain.payment.entity.PaymentStatus;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
 
@@ -27,9 +25,5 @@ public class Seat {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
     private Performance performance;
-
-    public void updateStatus(SeatStatus status) {
-        this.seatStatus = status;
-    }
 }
 
