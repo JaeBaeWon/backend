@@ -35,4 +35,9 @@ public class Reservation {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")
     private Seat seatId;
+
+    public void updateStatus(ReservationStatus status) {
+        this.reservationStatus = status;
+    }
+
 }

@@ -14,6 +14,7 @@ import java.util.Date;
 @Builder
 @Getter
 @Entity
+@Table(name = "Users")
 public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +24,7 @@ public class User {
 
     private String password;
 
+    @Column(name = "user_name")
     private String username;
 
     private Date birthday;

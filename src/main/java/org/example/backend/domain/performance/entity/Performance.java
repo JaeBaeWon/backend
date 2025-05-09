@@ -6,41 +6,35 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
+@Entity
+@Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Getter
-@Entity
 public class Performance {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long performId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "performance_id") // ← 반드시 테이블 컬럼 이름과 일치시켜야 함!
+    private Long performanceId;
 
     private String title;
-
     private String description;
 
     @Enumerated(EnumType.STRING)
     private PerformanceCategory category;
 
-    private String performCode;
-
-    private LocalDateTime performStartAt;
-
-    private LocalDateTime performEndAt;
-
+    private String performanceCode;
+    private Date performanceStartAt;
+    private Date performanceEndAt;
     private String location;
-
-    private String performImg;
+    private String performanceImg;
 
     private int price;
-
     private Long views;
-
     private int totalSeats;
-
     private int remainSeats;
 
     @Enumerated(EnumType.STRING)
