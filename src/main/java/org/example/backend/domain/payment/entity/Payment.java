@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.backend.domain.reservation.entity.Reservation;
+import org.example.backend.domain.reservation.entity.ReservationStatus;
 
 import java.util.Date;
 
@@ -32,4 +33,15 @@ public class Payment {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
+
+    @Column(name = "imp_uid")
+    private String impUid;
+
+    @Column(name = "merchant_uid")
+    private String merchantUid;
+
+
+    public void updateStatus(PaymentStatus status) {
+        this.paymentStatus = status;
+    }
 }
