@@ -1,16 +1,16 @@
 package org.example.backend.domain.seat.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.example.backend.domain.payment.entity.PaymentStatus;
 import org.example.backend.domain.performance.entity.Performance;
+import org.example.backend.domain.reservation.entity.ReservationStatus;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
+@Setter
 @Entity
 public class Seat {
 
@@ -21,9 +21,15 @@ public class Seat {
 
     private String seatSection;
 
-    private boolean seatReserved;
+    @Enumerated(EnumType.STRING)
+    private SeatStatus seatStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
     private Performance performance;
+
+    public void updateStatus(SeatStatus status) {
+        this.seatStatus = status;
+    }
 }
+
