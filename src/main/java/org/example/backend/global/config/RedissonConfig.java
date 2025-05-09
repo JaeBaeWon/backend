@@ -19,12 +19,13 @@ public class RedissonConfig {
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
-        String redisUrl = String.format("redis://%s:%s", REDIS_HOST, REDIS_PORT); // Redis 서버 주소
+        String redisUrl = String.format("redis://%s:%s", REDIS_HOST, REDIS_PORT);
         config.useSingleServer()
                 .setAddress(redisUrl)
-                .setConnectionMinimumIdleSize(1)
-                .setConnectionPoolSize(10);
+                .setConnectionMinimumIdleSize(20)   // 유휴 커넥션
+                .setConnectionPoolSize(64);         // 최대 커넥션
         return Redisson.create(config);
     }
+
 }
 
