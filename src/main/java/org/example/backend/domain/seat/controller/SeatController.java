@@ -37,14 +37,4 @@ public class SeatController {
         }
     }
 
-    /**
-     * 결제 완료 후, DB에 좌석 예약 반영
-     */
-    @PostMapping("/confirm/{seatId}")
-    public ResponseEntity<String> confirm(@PathVariable Long seatId) {
-        String result = seatService.confirmReservation(seatId);
-
-        return ResponseEntity.ok(result);
-    }
-
 }

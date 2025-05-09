@@ -1,12 +1,12 @@
 package org.example.backend.domain.performance.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 
 @Entity
 @Getter
@@ -21,20 +21,28 @@ public class Performance {
     private Long performanceId;
 
     private String title;
+
     private String description;
 
     @Enumerated(EnumType.STRING)
     private PerformanceCategory category;
 
     private String performanceCode;
-    private Date performanceStartAt;
-    private Date performanceEndAt;
+
+    private LocalDateTime performanceStartAt;
+
+    private LocalDateTime performanceEndAt;
+
     private String location;
+
     private String performanceImg;
 
     private int price;
+
     private Long views;
+
     private int totalSeats;
+
     private int remainSeats;
 
     @Enumerated(EnumType.STRING)

@@ -40,4 +40,7 @@ public class Reservation {
         this.reservationStatus = status;
     }
 
+    public void updateReservationStatus(ReservationStatus reservationStatus) {
+        this.reservationStatus = reservationStatus;
+    }
 }

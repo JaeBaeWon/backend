@@ -43,13 +43,13 @@ public class PerformRes {
 
     public static PerformRes of(Performance performance) {
         return PerformRes.builder()
-                .performId(performance.getPerformId())
+                .performId(performance.getPerformanceId())
                 .title(performance.getTitle())
                 .category(performance.getCategory())
-                .performStartAt(performance.getPerformStartAt())
-                .performEndAt(performance.getPerformEndAt())
+                .performStartAt(performance.getPerformanceStartAt())
+                .performEndAt(performance.getPerformanceEndAt())
                 .location(performance.getLocation())
-                .performImg(performance.getPerformImg())
+                .performImg(performance.getPerformanceImg())
                 .price(performance.getPrice())
                 .views(performance.getViews())
                 .remainSeats(performance.getRemainSeats())

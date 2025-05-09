@@ -33,7 +33,7 @@ public class NotificationService {
                 continue;
             }
 
-            LocalDateTime performStartAt = notification.getPerformance().getPerformStartAt();
+            LocalDateTime performStartAt = notification.getPerformance().getPerformanceStartAt();
             if (performStartAt == null) {
                 continue;
             }
@@ -45,7 +45,7 @@ public class NotificationService {
                         notification.getUser().getUsername(),
                         notification.getPerformance().getTitle(),
                         performStartAt,
-                        "https://example.com/reserve/" + notification.getPerformance().getPerformId()
+                        "https://example.com/reserve/" + notification.getPerformance().getPerformanceId()
                 );
             }
         }

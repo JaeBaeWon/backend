@@ -14,6 +14,7 @@ import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.seat.dto.SeatStatusDto;
 import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.global.exception.CustomException;
 import org.redisson.api.RLock;
@@ -45,8 +46,8 @@ public class SeatService {
                 Seat seat = seatRepository.findById(seatId)
                         .orElseThrow(() -> new CustomException(NOT_FOUND_SEAT));
 
-                if (seat.isSeatReserved()) {
-                    log.info("❌ 이미 결제 완료된 좌석입니다: {}", seatId);
+                if (!seat.getSeatStatus().equals(SeatStatus.AVAILABLE)) {
+                    log.info("❌ 이미 선점된 좌석입니다: {}", seatId);
                     return false;
                 }
 
@@ -75,24 +76,6 @@ public class SeatService {
     }
 
     /**
-     * 결제 완료 시 DB에 예약 반영 + Redis 캐시 삭제
-     */
-    @Transactional
-    public String confirmReservation(Long seatId) {
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_SEAT));
-
-        if (seat.isSeatReserved()) {
-            throw new CustomException(ALREADY_RESERVED);
-        }
-
-        seat.reserve();
-        redisTemplate.delete(SEAT_STATUS_PREFIX + seatId);
-
-        return "예약 완료";
-    }
-
-    /**
      * 공연의 전체 좌석 상태 조회
      */
     public List<SeatStatusDto> getAllSeatsStatus(Long performId) {
@@ -107,7 +90,7 @@ public class SeatService {
                             redisTemplate.hasKey(SEAT_STATUS_PREFIX + seat.getSeatId())
                     );
 
-                    boolean isReserved = seat.isSeatReserved() || isLocked;
+                    boolean isReserved = seat.getSeatStatus().equals(SeatStatus.AVAILABLE) || isLocked;
 
                     return SeatStatusDto.of(seat, isReserved);
                 })

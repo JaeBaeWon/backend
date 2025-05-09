@@ -33,7 +33,7 @@ public class SeatStatusDto implements Serializable {
                 .seatSection(seat.getSeatSection())
                 .seatNum(seat.getSeatNum())
                 .seatReserved(seatReserved)
-                .performId(seat.getPerformance().getPerformId())
+                .performId(seat.getPerformance().getPerformanceId())
                 .build();
     }
 

@@ -9,6 +9,7 @@ import org.example.backend.domain.performance.entity.PerformanceCategory;
 import org.example.backend.domain.performance.entity.PerformanceStatus;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -28,9 +29,9 @@ public class SeatDummyDataInitializer implements CommandLineRunner {
                         .title("100석 연극 테스트")
                         .description("더미 데이터용 연극")
                         .category(PerformanceCategory.PLAY)
-                        .performCode("PLAY-100")
-                        .performStartAt(LocalDateTime.now())
-                        .performEndAt(LocalDateTime.now().plusHours(2))
+                        .performanceCode("PLAY-100")
+                        .performanceStartAt(LocalDateTime.now())
+                        .performanceEndAt(LocalDateTime.now().plusHours(2))
                         .location("서울 테스트 극장")
                         .price(50000)
                         .views(0L)
@@ -48,7 +49,7 @@ public class SeatDummyDataInitializer implements CommandLineRunner {
             seats.add(Seat.builder()
                     .seatNum(seatNum)
                     .seatSection(section)
-                    .seatReserved(false)
+                    .seatStatus(SeatStatus.AVAILABLE)
                     .performance(performance)
                     .build());
         }

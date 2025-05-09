@@ -61,7 +61,7 @@ public class RefundService {
         payment.updateStatus(PaymentStatus.CANCELED);
 
         var reservation = payment.getReservation();
-        reservation.setReservationStatus(ReservationStatus.CANCELED);
+        reservation.updateReservationStatus(ReservationStatus.CANCELED);
 
         var seat = reservation.getSeatId();
         seat.updateStatus(SeatStatus.AVAILABLE);
