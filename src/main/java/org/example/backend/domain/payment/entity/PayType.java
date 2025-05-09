@@ -7,8 +7,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum PayType {
 
-    KAKAO_PAY("카카오페이"),
-    CREDIT_CARD("신용카드");
+    KAKAOPAY("카카오페이"),
+    CARD("신용카드"),
+    POINT("포인트");
 
     private final String description;
 }
