@@ -17,6 +17,7 @@ import org.example.backend.domain.performance.entity.PerformanceCategory;
 import org.example.backend.domain.performance.entity.PerformanceStatus;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.domain.seat.service.SeatService;
 import org.junit.jupiter.api.AfterEach;
@@ -54,9 +55,9 @@ public class MultiLockTest {
                         .title("멀티 좌석 락 테스트")
                         .description("동시성 분산락 테스트")
                         .category(PerformanceCategory.PLAY)
-                        .performCode("LOCK-MULTI")
-                        .performStartAt(LocalDateTime.now())
-                        .performEndAt(LocalDateTime.now().plusHours(2))
+                        .performanceCode("LOCK-MULTI")
+                        .performanceStartAt(LocalDateTime.now())
+                        .performanceEndAt(LocalDateTime.now().plusHours(2))
                         .location("부산")
                         .price(15000)
                         .views(0L)
@@ -73,7 +74,7 @@ public class MultiLockTest {
                     Seat.builder()
                             .seatNum("S-" + i)
                             .seatSection("A")
-                            .seatReserved(false)
+                            .seatStatus(SeatStatus.HOLD)
                             .performance(performance)
                             .build()
             );

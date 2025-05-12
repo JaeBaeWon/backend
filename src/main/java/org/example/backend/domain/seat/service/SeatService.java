@@ -1,10 +1,9 @@
 package org.example.backend.domain.seat.service;
 
-import static org.example.backend.global.exception.ExceptionContent.ALREADY_RESERVED;
+
 import static org.example.backend.global.exception.ExceptionContent.NOT_FOUND_PERFORMANCE;
 import static org.example.backend.global.exception.ExceptionContent.NOT_FOUND_SEAT;
 
-import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -90,9 +89,7 @@ public class SeatService {
                             redisTemplate.hasKey(SEAT_STATUS_PREFIX + seat.getSeatId())
                     );
 
-                    boolean isReserved = seat.getSeatStatus().equals(SeatStatus.AVAILABLE) || isLocked;
-
-                    return SeatStatusDto.of(seat, isReserved);
+                    return SeatStatusDto.of(seat);
                 })
                 .toList();
     }

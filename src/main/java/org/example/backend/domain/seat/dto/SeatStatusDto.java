@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,16 +24,16 @@ public class SeatStatusDto implements Serializable {
 
     private String seatNum;
 
-    private boolean seatReserved;
+    private SeatStatus seatStatus;
 
     private Long performId;
 
-    public static SeatStatusDto of(Seat seat, boolean seatReserved) {
+    public static SeatStatusDto of(Seat seat) {
         return SeatStatusDto.builder()
                 .seatId(seat.getSeatId())
                 .seatSection(seat.getSeatSection())
                 .seatNum(seat.getSeatNum())
-                .seatReserved(seatReserved)
+                .seatStatus(seat.getSeatStatus())
                 .performId(seat.getPerformance().getPerformanceId())
                 .build();
     }
