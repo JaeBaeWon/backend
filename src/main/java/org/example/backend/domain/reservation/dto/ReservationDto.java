@@ -7,6 +7,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
+
 public class ReservationDto {
     private Long userId;
     private Long performanceId;

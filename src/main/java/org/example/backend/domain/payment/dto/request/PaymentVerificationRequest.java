@@ -9,5 +9,8 @@ import lombok.Setter;
 public class PaymentVerificationRequest {
     private String impUid;
     private String merchantUid;
-    private Long reservationId;
+    private Long userId;
+    private Long performanceId;
+    private Long seatId;
 }
+
