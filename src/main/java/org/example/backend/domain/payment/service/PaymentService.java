@@ -5,19 +5,25 @@ import com.siot.IamportRestClient.response.IamportResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
+import org.example.backend.domain.payment.dto.response.PaymentCompleteResponse;
 import org.example.backend.domain.payment.entity.PayType;
 import org.example.backend.domain.payment.entity.Payment;
 import org.example.backend.domain.payment.entity.PaymentStatus;
 import org.example.backend.domain.payment.repository.PaymentRepository;
+import org.example.backend.domain.performance.entity.Performance;
+import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
 import org.example.backend.domain.reservation.repository.ReservationRepository;
 import org.example.backend.domain.seat.entity.Seat;
 import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
+import org.example.backend.domain.user.entity.User;
+import org.example.backend.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,46 +33,70 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
     private final SeatRepository seatRepository;
+    private final UserRepository userRepository;
+    private final PerformanceRepository performanceRepository;
+
 
     @Transactional
-    public void verifyAndSavePayment(PaymentVerificationRequest request) throws Exception {
+    public Reservation verifyAndCreateReservationAndSavePayment(PaymentVerificationRequest request) throws Exception {
+        var paymentInfo = verifyPaymentWithIamport(request.getImpUid());
 
-        System.out.println("🔍 imp_uid: " + request.getImpUid());
-        System.out.println("🔍 merchant_uid: " + request.getMerchantUid());
-        System.out.println("🔍 reservationId: " + request.getReservationId());
+        var user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
-        // 1. 아임포트 서버에서 결제 정보 검증
-        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse =
-                iamportClient.paymentByImpUid(request.getImpUid());
+        var performance = performanceRepository.findById(request.getPerformanceId())
+                .orElseThrow(() -> new IllegalArgumentException("공연 없음"));
 
-        if (iamportResponse.getResponse() == null) {
-            throw new IllegalStateException("아임포트에서 결제 정보를 찾을 수 없습니다.");
-        }
+        var seat = validateSeatAvailability(request.getSeatId(), performance, paymentInfo);
 
-        com.siot.IamportRestClient.response.Payment paymentInfo = iamportResponse.getResponse();
+        var reservation = createReservationEntity(user, performance, seat);
+        reservationRepository.save(reservation);
 
-        System.out.println("✅ 아임포트 응답 받은 결제 정보");
-        System.out.println("  - status: " + paymentInfo.getStatus());
-        System.out.println("  - amount: " + paymentInfo.getAmount());
-        System.out.println("  - payMethod: " + paymentInfo.getPayMethod());
+        seat.updateStatus(SeatStatus.BOOKED);
+        seatRepository.save(seat);
 
-        if (!paymentInfo.getStatus().equals("paid")) {
-            throw new IllegalStateException("결제가 완료되지 않았습니다.");
-        }
+        savePaymentRecord(request, paymentInfo, reservation);
 
-        // 2. 예약 정보 조회
-        Reservation reservation = reservationRepository.findById(request.getReservationId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 예약 정보가 없습니다."));
+        return reservation;
+    }
 
-        System.out.println("✅ 예약된 공연 금액: " + reservation.getPerformanceId().getPrice());
 
-        // 3. 금액 일치 여부 확인
-        if (paymentInfo.getAmount().intValue() != reservation.getPerformanceId().getPrice()) {
-            throw new IllegalStateException("결제 금액이 일치하지 않습니다.");
-        }
+    private com.siot.IamportRestClient.response.Payment verifyPaymentWithIamport(String impUid) throws Exception {
+        var response = iamportClient.paymentByImpUid(impUid);
+        var payment = response.getResponse();
+        if (payment == null) throw new IllegalStateException("결제 정보 없음");
+        if (!"paid".equals(payment.getStatus())) throw new IllegalStateException("결제 완료 상태가 아님");
+        return payment;
+    }
 
-        // 4. 결제 정보 저장
-        Payment payment = Payment.builder()
+    private Seat validateSeatAvailability(Long seatId, Performance performance, com.siot.IamportRestClient.response.Payment paymentInfo) {
+        var seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new IllegalArgumentException("좌석 없음"));
+
+        if (seat.getSeatStatus() != SeatStatus.AVAILABLE)
+            throw new IllegalStateException("좌석 사용 불가");
+
+        if (paymentInfo.getAmount().intValue() != performance.getPrice())
+            throw new IllegalStateException("결제 금액 불일치");
+
+        return seat;
+    }
+
+    private Reservation createReservationEntity(User user, Performance performance, Seat seat) {
+        return Reservation.builder()
+                .userId(user)
+                .performanceId(performance)
+                .seatId(seat)
+                .reservationStatus(ReservationStatus.RESERVED)
+                .ticketId(UUID.randomUUID().toString().replace("-", "").substring(0, 12))
+                .build();
+    }
+
+    private void savePaymentRecord(PaymentVerificationRequest request,
+                                   com.siot.IamportRestClient.response.Payment paymentInfo,
+                                   Reservation reservation) {
+
+        var payment = Payment.builder()
                 .impUid(request.getImpUid())
                 .merchantUid(request.getMerchantUid())
                 .paymentAmount(paymentInfo.getAmount().intValue())
@@ -77,16 +107,31 @@ public class PaymentService {
                 .build();
 
         paymentRepository.save(payment);
-
-        // 5. Reservation 상태 업데이트
-        reservation.updateStatus(ReservationStatus.RESERVED);
-
-        // 6. Seat 상태 업데이트
-        Seat seat = reservation.getSeatId();
-        seat.updateStatus(SeatStatus.BOOKED);
-
-        // 7. 저장
-        seatRepository.save(seat);
-        reservationRepository.save(reservation);
     }
+
+
+
+    public PaymentCompleteResponse getPaymentInfoByReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("해당 예약 정보가 없습니다."));
+
+
+        Payment payment = paymentRepository.findByReservation(reservation)
+                .orElseThrow(() -> new RuntimeException("해당 예약의 결제 내역 없음"));
+
+        Performance performance = reservation.getPerformanceId();
+        Seat seat = reservation.getSeatId();
+
+        return PaymentCompleteResponse.builder()
+                .ticketNumber(reservation.getTicketId())
+                .performanceTitle(performance.getTitle())
+                .performanceLocation(performance.getLocation())
+                .performanceDate(performance.getPerformanceStartAt().toString())
+                .seatInfo(seat.getSeatSection() + "구역 " + seat.getSeatNum() + "번")
+                .paymentAmount(payment.getPaymentAmount())
+                .payType(payment.getPayType().getDescription())
+                .paymentTime(payment.getPaymentDate().toString())
+                .build();
+    }
+
 }
