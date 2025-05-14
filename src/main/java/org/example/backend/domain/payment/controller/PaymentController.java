@@ -1,10 +1,10 @@
 package org.example.backend.domain.payment.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.domain.payment.dto.PaymentDto;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
 import org.example.backend.domain.payment.dto.response.PaymentCompleteResponse;
 import org.example.backend.domain.payment.entity.Payment;
+
 import org.example.backend.domain.payment.repository.PaymentRepository;
 import org.example.backend.domain.payment.service.PaymentService;
 import org.springframework.http.HttpStatus;
