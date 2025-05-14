@@ -26,35 +26,37 @@ public class SeatDummyDataInitializer implements CommandLineRunner {
         // 1. 공연 생성
         Performance performance = performanceRepository.save(
                 Performance.builder()
-                        .title("100석 연극 테스트")
+                        .title("연극 테스트")
                         .description("더미 데이터용 연극")
                         .category(PerformanceCategory.PLAY)
                         .performanceCode("PLAY-100")
                         .performanceStartAt(LocalDateTime.now())
                         .performanceEndAt(LocalDateTime.now().plusHours(2))
                         .location("서울 테스트 극장")
-                        .price(50000)
+                        .price(500)
                         .views(0L)
-                        .totalSeats(100)
-                        .remainSeats(100)
+                        .totalSeats(600)
+                        .remainSeats(600)
                         .performanceStatus(PerformanceStatus.UPCOMING)
                         .build()
         );
 
-        // 2. 좌석 100개 생성 (예: A1 ~ A50, B1 ~ B50)
+        // 2. 좌석 600개 생성
         List<Seat> seats = new ArrayList<>();
-        for (int i = 1; i <= 100; i++) {
-            String section = (i <= 50) ? "A" : "B";
-            String seatNum = section + (i <= 50 ? i : (i - 50));
-            seats.add(Seat.builder()
-                    .seatNum(seatNum)
-                    .seatSection(section)
-                    .seatStatus(SeatStatus.AVAILABLE)
-                    .performance(performance)
-                    .build());
+
+        for (char section = 'A'; section <= 'F'; section++) {
+            for (int number = 1; number <= 100; number++) {
+                Seat seat = Seat.builder()
+                        .seatSection(String.valueOf(section))  // A ~ F
+                        .seatNum(String.valueOf(number))      // 1 ~ 100
+                        .seatStatus(SeatStatus.AVAILABLE)     // 기본 상태
+                        .performance(performance)
+                        .build();
+                seats.add(seat);
+            }
         }
         seatRepository.saveAll(seats);
 
-        System.out.println("✅ 100석 연극 공연 더미 데이터 삽입 완료");
+        System.out.println("✅ 600석 연극 공연 더미 데이터 삽입 완료");
     }
 }
