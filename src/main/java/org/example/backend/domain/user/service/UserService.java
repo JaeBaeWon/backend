@@ -6,7 +6,6 @@ import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,4 +17,5 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 존재하지 않습니다."));
     }
+
 }
