@@ -52,7 +52,7 @@ public class ReservationController {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
         User user = reservation.getUser();
-        Performance performance = reservation.getPerformanceId();
+        Performance performance = reservation.getPerformance();
 
         System.out.println("user: " + user.getUsername() + ", price: " + performance.getPrice());
 
