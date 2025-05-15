@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.backend.domain.reservation.entity.Reservation;
-import org.example.backend.domain.reservation.entity.ReservationStatus;
 
 import java.util.Date;
 
@@ -39,6 +38,8 @@ public class Payment {
 
     @Column(name = "merchant_uid")
     private String merchantUid;
+
+    private Integer refundAmount;
 
 
     public void updateStatus(PaymentStatus status) {

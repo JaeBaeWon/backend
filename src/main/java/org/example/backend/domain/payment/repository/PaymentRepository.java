@@ -10,7 +10,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByImpUid(String impUid);
 
     Optional<Payment> findByReservation(Reservation reservation);
-
 }
 
 
