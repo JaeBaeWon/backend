@@ -61,5 +61,4 @@ public class Reservation {
     public void updateStatus(ReservationStatus status) {
         this.reservationStatus = status;
     }
-
 }

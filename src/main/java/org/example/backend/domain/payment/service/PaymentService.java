@@ -1,7 +1,7 @@
 package org.example.backend.domain.payment.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siot.IamportRestClient.IamportClient;
-import com.siot.IamportRestClient.response.IamportResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
@@ -12,6 +12,8 @@ import org.example.backend.domain.payment.entity.PaymentStatus;
 import org.example.backend.domain.payment.repository.PaymentRepository;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
+import org.example.backend.domain.reservation.dto.ReservationKafkaDto;
+import org.example.backend.domain.reservation.dto.ReservationResponse;
 import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
 import org.example.backend.domain.reservation.repository.ReservationRepository;
@@ -20,6 +22,7 @@ import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -35,29 +38,45 @@ public class PaymentService {
     private final SeatRepository seatRepository;
     private final UserRepository userRepository;
     private final PerformanceRepository performanceRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
 
     @Transactional
-    public Reservation verifyAndCreateReservationAndSavePayment(PaymentVerificationRequest request) throws Exception {
+    public ReservationResponse verifyAndCreateReservationAndSavePayment(PaymentVerificationRequest request) throws Exception {
         var paymentInfo = verifyPaymentWithIamport(request.getImpUid());
 
-        var user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
-        var performance = performanceRepository.findById(request.getPerformanceId())
+        Performance performance = performanceRepository.findById(request.getPerformanceId())
                 .orElseThrow(() -> new IllegalArgumentException("공연 없음"));
 
-        var seat = validateSeatAvailability(request.getSeatId(), performance, paymentInfo);
+        Seat seat = validateSeatAvailability(request.getSeatId(), performance, paymentInfo);
 
-        var reservation = createReservationEntity(user, performance, seat);
-        reservationRepository.save(reservation);
+        String ticketId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
-        seat.updateStatus(SeatStatus.BOOKED);
-        seatRepository.save(seat);
+        // Kafka로 전송할 DTO
+        ReservationKafkaDto dto = ReservationKafkaDto.builder()
+                .userId(user.getUserId())
+                .performanceId(performance.getPerformanceId())
+                .seatId(seat.getSeatId())
+                .ticketId(ticketId)
+                .impUid(request.getImpUid())
+                .merchantUid(request.getMerchantUid())
+                .paymentAmount(paymentInfo.getAmount().intValue())
+                .payMethod(paymentInfo.getPayMethod())
+                .build();
 
-        savePaymentRecord(request, paymentInfo, reservation);
+        kafkaTemplate.send("reservation", objectMapper.writeValueAsString(dto));
 
-        return reservation;
+        // 응답용 DTO 리턴
+        return ReservationResponse.builder()
+                .userId(user.getUserId())
+                .performanceId(performance.getPerformanceId())
+                .seatId(seat.getSeatId())
+                .ticketId(ticketId)
+                .build();
     }
 
 
@@ -84,9 +103,9 @@ public class PaymentService {
 
     private Reservation createReservationEntity(User user, Performance performance, Seat seat) {
         return Reservation.builder()
-                .userId(user)
-                .performanceId(performance)
-                .seatId(seat)
+                .user(user)
+                .performance(performance)
+                .seat(seat)
                 .reservationStatus(ReservationStatus.RESERVED)
                 .ticketId(UUID.randomUUID().toString().replace("-", "").substring(0, 12))
                 .build();
@@ -119,8 +138,8 @@ public class PaymentService {
         Payment payment = paymentRepository.findByReservation(reservation)
                 .orElseThrow(() -> new RuntimeException("해당 예약의 결제 내역 없음"));
 
-        Performance performance = reservation.getPerformanceId();
-        Seat seat = reservation.getSeatId();
+        Performance performance = reservation.getPerformance();
+        Seat seat = reservation.getSeat();
 
         return PaymentCompleteResponse.builder()
                 .ticketNumber(reservation.getTicketId())

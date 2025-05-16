@@ -3,10 +3,10 @@ package org.example.backend.domain.payment.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
 import org.example.backend.domain.payment.dto.response.PaymentCompleteResponse;
-import org.example.backend.domain.payment.entity.Payment;
 
 import org.example.backend.domain.payment.repository.PaymentRepository;
 import org.example.backend.domain.payment.service.PaymentService;
+import org.example.backend.domain.reservation.dto.ReservationResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,20 +24,14 @@ public class PaymentController {
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest request) {
         try {
-            var reservation = paymentService.verifyAndCreateReservationAndSavePayment(request);
-
-            // ✅ JSON으로 응답
-            return ResponseEntity.ok().body(
-                    java.util.Map.of(
-                            "message", "결제 및 예매 완료",
-                            "reservationId", reservation.getReservationId()
-                    )
-            );
+            ReservationResponse response = paymentService.verifyAndCreateReservationAndSavePayment(request);
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "❌ 결제 검증 실패: " + e.getMessage()));
         }
     }
+
 
     @GetMapping("/imp/{imp_uid}")
     public ResponseEntity<?> getPaymentByImpUid(@PathVariable String impUid) {

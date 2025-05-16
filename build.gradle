@@ -19,6 +19,12 @@ configurations {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' } // ← 이거 추가
+}
+
+
 dependencies {
     // Spring Boot 기본
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -62,6 +68,9 @@ dependencies {
 
     //iamport
     implementation 'com.github.iamport:iamport-rest-client-java:0.2.23'
+
+    //kafka
+    implementation 'org.springframework.kafka:spring-kafka'
 
     //secret-manager
     //implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:3.0.2'

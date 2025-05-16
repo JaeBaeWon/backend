@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/auth/login", "/auth/join", "/auth/refresh",
                         "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
-                        "/oauth2/**", "/error"
+                        "/oauth2/**",  "health", "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
         );
