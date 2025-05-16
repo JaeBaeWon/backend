@@ -1,3 +1,4 @@
+/*
 package org.example.backend.domain.seat.service;
 
 import java.time.LocalDateTime;
@@ -60,3 +61,4 @@ public class SeatDummyDataInitializer implements CommandLineRunner {
         System.out.println("✅ 600석 연극 공연 더미 데이터 삽입 완료");
     }
 }
+*/
