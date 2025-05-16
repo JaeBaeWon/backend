@@ -6,6 +6,7 @@ import org.example.backend.domain.performance.dto.response.PerformRes;
 import org.example.backend.domain.performance.service.PerformanceService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,7 +52,7 @@ public class PerformanceController {
 
     //공연 전체 목록 조회
     @GetMapping("/all")
-    public ResponseEntity<List<PerformRes>> getAllPerform() {
+    public ResponseEntity<List<PerformRes>> getAllPerform(Authentication auth) {
         List<PerformRes> performResList = performanceService.getPerformList();
 
         return ResponseEntity.ok().body(performResList);
