@@ -26,13 +26,8 @@ public class PerformanceController {
     public ResponseEntity<Page<PerformRes>> searchPerformances(@RequestParam(required = false) String keyword,
                                                                @RequestParam(required = false) String category,
                                                                @RequestParam(required = false) String status,
-                                                               @RequestParam(defaultValue = "0") int page,
-                                                               Authentication auth)
+                                                               @RequestParam(defaultValue = "0") int page)
     {
-
-        boolean check = memberService.isAuthenticated(auth);
-        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
         Page<PerformRes> performResPage = performanceService.searchPerformances(keyword, category, status, page);
 
         return ResponseEntity.ok(performResPage);

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.example.backend.domain.payment.entity.PayType;
 import org.example.backend.domain.payment.entity.Payment;
 import org.example.backend.domain.payment.entity.PaymentStatus;
+import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.entity.PerformanceStatus;
 import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
@@ -24,30 +25,40 @@ public class ReservationDetailsDto {
     private LocalDateTime performanceStartAt; // 이용일
     private String location;              // 장소
     private LocalDateTime reservationDay; // 예매일
-    private PerformanceStatus performanceStatus;     // 현재 상태
+    private PerformanceStatus performanceStatus;
 
-    private PayType payType; // DTO 내부
-    private PaymentStatus paymentStatus;         // 결제상태
-
+    private PayType payType;
+    private PaymentStatus paymentStatus;
     private Long seatId;
-    private Integer paymentAmount;        // 가격 / 총 결제금액
-    private ReservationStatus refundStatus;         // 취소여부 (true: 환불됨)
-    private Integer refundAmount;         // 환불 금액
+    private Integer paymentAmount;
+    private ReservationStatus refundStatus;
+    private Integer refundAmount;
+
+    // ✅ 추가
+    private String showTitle;             // 공연 제목
+    private String showImage;             // 공연 포스터 URL
+
+    private Long paymentId; // ✅ 환불 요청 시 필요
 
     public static ReservationDetailsDto of(Reservation reservation, Payment payment) {
+        Performance performance = reservation.getPerformance();
+
         return ReservationDetailsDto.builder()
                 .userName(reservation.getUser().getUsername())
                 .ticketId(reservation.getTicketId())
-                .performanceStartAt(reservation.getPerformance().getPerformanceStartAt())
-                .location(reservation.getPerformance().getLocation()) // 공연장명
+                .performanceStartAt(performance.getPerformanceStartAt())
+                .location(performance.getLocation())
                 .reservationDay(reservation.getReservationDate())
-                .performanceStatus(reservation.getPerformance().getPerformanceStatus())
+                .performanceStatus(performance.getPerformanceStatus())
                 .payType(payment.getPayType())
                 .paymentStatus(payment.getPaymentStatus())
-                .seatId(reservation.getSeat().getSeatId()) // 예: "A10"
+                .seatId(reservation.getSeat().getSeatId())
                 .paymentAmount(payment.getPaymentAmount())
-                .refundStatus(reservation.getReservationStatus()) // ✅ enum 값을 그대로 넘김
+                .refundStatus(reservation.getReservationStatus())
                 .refundAmount(payment.getRefundAmount())
+                .showTitle(performance.getTitle())                  // 🔹 추가
+                .showImage(performance.getPerformanceImg())        // 🔹 추가
+                .paymentId(payment.getPaymentId())
                 .build();
     }
 }

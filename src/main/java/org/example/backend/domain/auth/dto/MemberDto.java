@@ -11,13 +11,21 @@ import org.example.backend.domain.user.entity.User;
 public class MemberDto {
     private Long id;
     private String email;
-    private String userName;  // user_name 필드 매핑용
+    private String userName;   // 유저 이름
+    private String phone;      // 연락처
+    private String zipCode;    // 우편번호
+    private String streetAdr;  // 기본 주소
+    private String detailAdr;  // 상세 주소
 
     public static MemberDto of(User user) {
         return MemberDto.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
                 .userName(user.getUsername())
+                .phone(user.getPhone())
+                .zipCode(user.getZipCode())
+                .streetAdr(user.getStreetAdr())
+                .detailAdr(user.getDetailAdr())
                 .build();
     }
 }

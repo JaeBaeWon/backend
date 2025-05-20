@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -28,12 +30,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        http.cors(withDefaults());
+
         // ✅ 권한 제어
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/auth/login", "/auth/join", "/auth/refresh",
                         "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
-                        "/oauth2/**",  "health", "/error"
+                        "/oauth2/**",  "health", "/error", "/performance/**",
+                        "/auth/check-duplicate", "/seat/**"
                 ).permitAll()
                 .anyRequest().authenticated()
         );

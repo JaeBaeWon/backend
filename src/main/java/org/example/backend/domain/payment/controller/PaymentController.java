@@ -1,6 +1,7 @@
 package org.example.backend.domain.payment.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.domain.auth.config.CustomSecurityUserDetails;
 import org.example.backend.domain.auth.service.MemberService;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
 import org.example.backend.domain.payment.dto.response.PaymentCompleteResponse;
@@ -27,8 +28,12 @@ public class PaymentController {
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest request, Authentication auth) {
 
-        boolean check = memberService.isAuthenticated(auth);
-        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (auth == null || !(auth.getPrincipal() instanceof CustomSecurityUserDetails userDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Long userId = userDetails.getUserId();
+        request.setUserId(userId);
 
         try {
             ReservationResponse response = paymentService.verifyAndCreateReservationAndSavePayment(request);
@@ -38,6 +43,7 @@ public class PaymentController {
                     .body(Map.of("error", "❌ 결제 검증 실패: " + e.getMessage()));
         }
     }
+
 
 
     @GetMapping("/imp/{imp_uid}")
