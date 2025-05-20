@@ -94,6 +94,9 @@ public class MemberService {
 
     public ReservationDetailsDto
     getReservationByIdAndLoginId(Long reservationId, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_USER));
+
         Reservation reservation = reservationRepository.findByReservationIdAndUserEmail(reservationId, email)
                 .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
 
@@ -253,4 +256,5 @@ public class MemberService {
     private boolean isValidCertification(Certification cert, String inputCode) {
         return bCryptPasswordEncoder.matches(inputCode, cert.getCertificationNumber()) && cert.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(CERTIFICATION_EXPIRATION_MINUTES));
     }
+
 }

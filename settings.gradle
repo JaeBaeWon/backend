@@ -4,5 +4,6 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
