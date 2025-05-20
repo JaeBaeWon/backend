@@ -1,10 +1,12 @@
 package org.example.backend.domain.performance.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.domain.auth.service.MemberService;
 import org.example.backend.domain.performance.dto.response.PerformDetailRes;
 import org.example.backend.domain.performance.dto.response.PerformRes;
 import org.example.backend.domain.performance.service.PerformanceService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +19,19 @@ import java.util.List;
 public class PerformanceController {
 
     private final PerformanceService performanceService;
+    private final MemberService memberService;
 
     // 통합 검색: 키워드 + 카테고리 + 상태
     @GetMapping("/search")
     public ResponseEntity<Page<PerformRes>> searchPerformances(@RequestParam(required = false) String keyword,
                                                                @RequestParam(required = false) String category,
                                                                @RequestParam(required = false) String status,
-                                                               @RequestParam(defaultValue = "0") int page) {
+                                                               @RequestParam(defaultValue = "0") int page,
+                                                               Authentication auth)
+    {
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         Page<PerformRes> performResPage = performanceService.searchPerformances(keyword, category, status, page);
 
@@ -33,7 +41,12 @@ public class PerformanceController {
     // 키워드로 공연 목록 조회
     @GetMapping("/keyword")
     public ResponseEntity<Page<PerformRes>> searchPerformancesByKeyword(@RequestParam String keyword,
-                                                                        @RequestParam(defaultValue = "0") int page) {
+                                                                        @RequestParam(defaultValue = "0") int page,
+                                                                        Authentication auth)
+    {
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         Page<PerformRes> performResPage = performanceService.getPerformListByKeyword(keyword, page);
 
@@ -52,7 +65,8 @@ public class PerformanceController {
 
     //공연 전체 목록 조회
     @GetMapping("/all")
-    public ResponseEntity<List<PerformRes>> getAllPerform(Authentication auth) {
+    public ResponseEntity<List<PerformRes>> getAllPerform() {
+
         List<PerformRes> performResList = performanceService.getPerformList();
 
         return ResponseEntity.ok().body(performResList);

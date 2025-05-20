@@ -27,10 +27,6 @@ public class UserController {
     private final MemberService memberService;
     private final JWTUtil jwtUtil;
 
-    private boolean isAuthenticated(Authentication auth) {
-        return auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName());
-    }
-
     @GetMapping("/user/{userId}")
     public User getUser(@PathVariable Long userId) {
         return userService.getUserById(userId);
@@ -39,16 +35,24 @@ public class UserController {
     //내 정보 수정
     @PutMapping("/user/profile")
     public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request,
-                                                Authentication authentication) {
-        if (!isAuthenticated(authentication)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                                                Authentication auth) {
 
-        memberService.updateMemberProfile(authentication.getName(), request);
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        memberService.updateMemberProfile(auth.getName(), request);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
     @GetMapping("/user/profile")
     public ResponseEntity<MemberProfileResponse> getProfile(Authentication authentication) {
-        if (!isAuthenticated(authentication)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        boolean check = memberService.isAuthenticated(authentication);
+        if (!check) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         MemberProfileResponse profile = memberService.getProfile(authentication.getName());
         return ResponseEntity.ok(profile);
@@ -58,7 +62,9 @@ public class UserController {
     //마이페이지
     @GetMapping("/user/info")
     public ResponseEntity<?> memberInfo(Authentication auth) {
-        if (!isAuthenticated(auth)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         MemberDto member = memberService.getLoginMemberByEmail(auth.getName());
         boolean onboardingComplete = memberService.isOnboardingComplete(member.getEmail());
@@ -71,7 +77,9 @@ public class UserController {
 
     @GetMapping("/user/reservation")
     public ResponseEntity<List<MyPageReservationDto>> reservationPage(Authentication auth) {
-        if (!isAuthenticated(auth)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         List<MyPageReservationDto> reservations = memberService.getReservationsForUser(auth.getName());
         return ResponseEntity.ok(reservations);
@@ -80,7 +88,9 @@ public class UserController {
     @GetMapping("/user/reservation/{id}")
     public ResponseEntity<ReservationDetailsDto> reservationDetailPage(@PathVariable("id") Long reservationId,
                                                                        Authentication auth) {
-        if (!isAuthenticated(auth)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         ReservationDetailsDto dto = memberService.getReservationByIdAndLoginId(reservationId, auth.getName());
         return ResponseEntity.ok(dto);

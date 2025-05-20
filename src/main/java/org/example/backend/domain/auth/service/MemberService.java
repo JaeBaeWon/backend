@@ -23,6 +23,7 @@ import org.example.backend.global.exception.CustomException;
 import org.example.backend.global.exception.ExceptionContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,10 @@ public class MemberService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JWTUtil jwtUtil;
     private final PaymentRepository paymentRepository;
+
+    public boolean isAuthenticated(Authentication auth) {
+        return auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName());
+    }
 
     public boolean checkLoginIdDuplicate(String email) {
         return userRepository.existsByEmail(email);

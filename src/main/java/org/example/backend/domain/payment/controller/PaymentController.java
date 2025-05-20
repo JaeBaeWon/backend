@@ -1,6 +1,7 @@
 package org.example.backend.domain.payment.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.domain.auth.service.MemberService;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
 import org.example.backend.domain.payment.dto.response.PaymentCompleteResponse;
 
@@ -9,6 +10,7 @@ import org.example.backend.domain.payment.service.PaymentService;
 import org.example.backend.domain.reservation.dto.ReservationResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,9 +22,14 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
+    private final MemberService memberService;
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest request) {
+    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest request, Authentication auth) {
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         try {
             ReservationResponse response = paymentService.verifyAndCreateReservationAndSavePayment(request);
             return ResponseEntity.ok().body(response);
@@ -34,14 +41,22 @@ public class PaymentController {
 
 
     @GetMapping("/imp/{imp_uid}")
-    public ResponseEntity<?> getPaymentByImpUid(@PathVariable String impUid) {
+    public ResponseEntity<?> getPaymentByImpUid(@PathVariable String impUid, Authentication auth) {
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         var payment = paymentRepository.findByImpUid(impUid)
                 .orElseThrow(() -> new RuntimeException("결제 내역이 없습니다."));
         return ResponseEntity.ok(payment);
     }
 
     @GetMapping("/info/{reservationId}")
-    public ResponseEntity<?> getPaymentCompleteInfo(@PathVariable Long reservationId) {
+    public ResponseEntity<?> getPaymentCompleteInfo(@PathVariable Long reservationId, Authentication auth) {
+
+        boolean check = memberService.isAuthenticated(auth);
+        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         PaymentCompleteResponse response = paymentService.getPaymentInfoByReservation(reservationId);
         return ResponseEntity.ok(response);
     }

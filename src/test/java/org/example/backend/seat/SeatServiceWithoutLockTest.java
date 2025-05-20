@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.backend.domain.performance.entity.*;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.domain.seat.service.SeatService;
 import org.junit.jupiter.api.*;
@@ -39,9 +40,9 @@ class SeatServiceWithoutLockTest {
                         .title("락 없음 테스트")
                         .description("동시성 충돌")
                         .category(PerformanceCategory.CONCERT)
-                        .performCode("NOLOCK-01")
-                        .performStartAt(LocalDateTime.now())
-                        .performEndAt(LocalDateTime.now().plusHours(2))
+                        .performanceCode("NOLOCK-01")
+                        .performanceStartAt(LocalDateTime.now())
+                        .performanceEndAt(LocalDateTime.now().plusHours(2))
                         .location("서울")
                         .price(10000)
                         .views(0L)
@@ -55,7 +56,7 @@ class SeatServiceWithoutLockTest {
                 Seat.builder()
                         .seatNum("A-NOLOCK")
                         .seatSection("A")
-                        .seatReserved(false)
+                        .seatStatus(SeatStatus.AVAILABLE)
                         .performance(performance)
                         .build()
         );
