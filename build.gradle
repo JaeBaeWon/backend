@@ -19,9 +19,20 @@ configurations {
     }
 }
 
+ext {
+    set('springCloudVersion', "2023.0.0")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' } // ← 이거 추가
+    maven { url 'https://jitpack.io' }
 }
 
 
@@ -73,8 +84,7 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
 
     //secret-manager
-    //implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:3.0.2'
-
+    implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4'
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
