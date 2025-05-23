@@ -180,4 +180,14 @@ public class SecurityLoginController {
         String newAccessToken = jwtUtil.createAccessToken(userId, email, "ROLE_USER");
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
+
+    // ✅ 이메일 중복 확인 API
+    @GetMapping("/check-duplicate")
+    public ResponseEntity<?> checkDuplicateEmail(@RequestParam("email") String email) {
+        boolean exists = memberService.checkLoginIdDuplicate(email);
+        return ResponseEntity.ok(Map.<String, Object>of("available", !exists));
+    }
+
+
+
 }

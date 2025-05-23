@@ -5,6 +5,9 @@ import org.example.backend.domain.performance.dto.response.PerformDetailRes;
 import org.example.backend.domain.performance.dto.response.PerformRes;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
+import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
+import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.global.exception.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +22,7 @@ import static org.example.backend.global.exception.ExceptionContent.NOT_FOUND_PE
 public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
+    private final SeatRepository seatRepository;
 
     // 통합 공연 목록 조회
     public Page<PerformRes> searchPerformances(String keyword, String category, String status, int page) {
@@ -60,7 +64,16 @@ public class PerformanceService {
     public PerformDetailRes getPerformDetail(Long performId) {
         Performance performance = getPerformById(performId);
 
-        return PerformDetailRes.of(performance);
+        // 공연에 관련된 좌석 조회
+        List<Seat> seats = seatRepository.findAllByPerformance(performance);
+
+        // AVAILABLE 상태인 좌석 개수 계산
+        long remainingSeats = seats.stream()
+                .filter(seat -> seat.getSeatStatus() == SeatStatus.AVAILABLE)
+                .count();
+
+        // PerformDetailRes 생성하여 반환
+        return PerformDetailRes.of(performance, remainingSeats);
     }
 
     //공연 전체 조회
@@ -75,4 +88,5 @@ public class PerformanceService {
 
         return performance;
     }
+
 }
