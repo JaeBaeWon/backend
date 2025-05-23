@@ -47,7 +47,7 @@ public class PerformDetailRes {
 
     private PerformanceStatus performanceStatus;
 
-    public static PerformDetailRes of(Performance performance) {
+    public static PerformDetailRes of(Performance performance, long remainSeats) {
         return PerformDetailRes.builder()
                 .performId(performance.getPerformanceId())
                 .title(performance.getTitle())
@@ -61,7 +61,7 @@ public class PerformDetailRes {
                 .price(performance.getPrice())
                 .views(performance.getViews())
                 .totalSeats(performance.getTotalSeats())
-                .remainSeats(performance.getRemainSeats())
+                .remainSeats((int) remainSeats)
                 .performanceStatus(performance.getPerformanceStatus())
                 .build();
     }
