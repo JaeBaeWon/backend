@@ -59,7 +59,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
                     .provider(provider)
                     .providerId(providerId)
                     .password(UUID.randomUUID().toString()) // ✅ null 방지용 임의 문자열 설정
-                    .role(UserRole.USER)
+                    .role(UserRole.CONSUMER)
                     .build();
 
             userRepository.save(user);

@@ -11,6 +11,7 @@ import org.example.backend.domain.auth.entity.Certification;
 import org.example.backend.domain.auth.entity.RefreshToken;
 import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.auth.repository.CertificationRepository;
+import org.example.backend.domain.user.entity.UserRole;
 import org.example.backend.domain.user.repository.UserRepository;
 import org.example.backend.domain.auth.repository.RefreshTokenRepository;
 import org.example.backend.domain.reservation.repository.ReservationRepository;
@@ -67,6 +68,12 @@ public class MemberService {
         userRepository.save(user);
     }
 
+    // 관리자 회원가입용
+    public void join(User user) {
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
+    }
+
     public boolean isOnboardingComplete(String email) {
         return userRepository.findByEmail(email).map(this::isOnboardingComplete).orElse(false);
     }
@@ -88,7 +95,7 @@ public class MemberService {
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), user.getEmail(), user.getRole().name());
 
-        return LoginResponseDto.builder().email(user.getEmail()).userName(user.getUsername()).role(user.getRole().name()).accessToken(accessToken).refreshToken(refreshToken).build();
+        return LoginResponseDto.builder().email(user.getEmail()).userName(user.getUsername()).role(UserRole.valueOf(user.getRole().name())).accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
 

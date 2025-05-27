@@ -79,9 +79,27 @@ public class SecurityLoginController {
                 "accessToken", loginResult.getAccessToken(),
                 "role", loginResult.getRole(),
                 "name", loginResult.getUserName(),
-                "onboardingComplete", memberService.isOnboardingComplete(loginResult.getEmail())
+                "onboardingComplete", memberService.isOnboardingComplete(loginResult.getEmail()),
+                "redirectUrl", loginResult.getRole().equals("MANAGER")
+                        ? "/manager/performance"
+                        : "/onboarding"
         ));
     }
+
+    @PostMapping("/admin-join")
+    public ResponseEntity<?> adminJoin(@RequestBody AdminJoinRequest request) {
+        if (!request.getPassword().equals(request.getPasswordCheck())) {
+            return ResponseEntity.badRequest().body("비밀번호가 일치하지 않습니다.");
+        }
+
+        if (!request.getRole().equalsIgnoreCase("MANAGER")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("관리자 등록은 MANAGER만 허용됩니다.");
+        }
+
+        memberService.join(request.toEntity());
+        return ResponseEntity.ok("관리자 등록 성공");
+    }
+
 
     // ✅ 회원가입
     @PostMapping("/join")
@@ -187,7 +205,6 @@ public class SecurityLoginController {
         boolean exists = memberService.checkLoginIdDuplicate(email);
         return ResponseEntity.ok(Map.<String, Object>of("available", !exists));
     }
-
 
 
 }

@@ -41,9 +41,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/auth/login", "/auth/join", "/auth/refresh",
-                        "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
+                        "/auth/find-id/**", "/auth/reset-password/**","/auth/admin-join", "/auth/check/**",
                         "/oauth2/**",  "health", "/error", "/performance/**",
-                        "/auth/check-duplicate", "/seat/**"
+                        "/auth/check-duplicate", "/seat/**",  "/manager/performance/**"
                 ).permitAll()
                 .anyRequest().authenticated()
         );

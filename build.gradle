@@ -75,7 +75,7 @@ dependencies {
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     //redisson
-    implementation 'org.redisson:redisson-spring-boot-starter:3.27.0'
+    //implementation 'org.redisson:redisson-spring-boot-starter:3.27.0'
 
     //iamport
     implementation 'com.github.iamport:iamport-rest-client-java:0.2.23'
