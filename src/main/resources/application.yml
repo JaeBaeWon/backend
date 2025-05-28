@@ -1,6 +1,12 @@
 spring:
-  config:
-    import: aws-secretsmanager:secret/backend
+#  config:
+#    import: aws-secretsmanager:secret/backend
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        use-default-aws-credentials-chain: true
   jpa:
     hibernate:
       ddl-auto: update
