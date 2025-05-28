@@ -16,7 +16,7 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
 
     public CustomOauth2UserDetails(User user, Map<String, Object> attributes) {
 
-        this.user = user;
+        this.user = user; //1
         this.attributes = attributes;
     }
 
