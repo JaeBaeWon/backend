@@ -103,6 +103,15 @@ spring:
           starttls:
             enable: true
 
+redis:
+  cluster:
+    nodes:
+      - redis-0.redis.redis-cluster.svc.cluster.local:6379
+      - redis-1.redis.redis-cluster.svc.cluster.local:6379
+      - redis-2.redis.redis-cluster.svc.cluster.local:6379
+      - redis-3.redis.redis-cluster.svc.cluster.local:6379
+      - redis-4.redis.redis-cluster.svc.cluster.local:6379
+      - redis-5.redis.redis-cluster.svc.cluster.local:6379
 
 recaptcha:
   secret: ${RECAPTCHA_SECRET}
