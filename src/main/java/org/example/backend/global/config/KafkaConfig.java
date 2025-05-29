@@ -5,7 +5,10 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
+import software.amazon.msk.auth.iam.IAMClientCallbackHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +25,16 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put("security.protocol", "SASL_SSL");
+        configProps.put("sasl.mechanism", "AWS_MSK_IAM");
+        configProps.put("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
+        configProps.put("sasl.client.callback.handler.class", IAMClientCallbackHandler.class.getName());
+
+        // 선택 사항 (추천)
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 10);
+        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
@@ -30,4 +43,3 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 }
-
