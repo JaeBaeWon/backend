@@ -33,6 +33,9 @@ public class PerformDetailRes {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime performEndAt;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime performanceOpenAt;
+
     private String location;
 
     private String performImg;
@@ -47,6 +50,9 @@ public class PerformDetailRes {
 
     private PerformanceStatus performanceStatus;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime reservationDay;
+
     public static PerformDetailRes of(Performance performance, long remainSeats) {
         return PerformDetailRes.builder()
                 .performId(performance.getPerformanceId())
@@ -56,6 +62,7 @@ public class PerformDetailRes {
                 .performCode(performance.getPerformanceCode())
                 .performStartAt(performance.getPerformanceStartAt())
                 .performEndAt(performance.getPerformanceEndAt())
+                .performanceOpenAt(performance.getPerformanceOpenAt())
                 .location(performance.getLocation())
                 .performImg(performance.getPerformanceImg())
                 .price(performance.getPrice())
@@ -63,6 +70,7 @@ public class PerformDetailRes {
                 .totalSeats(performance.getTotalSeats())
                 .remainSeats((int) remainSeats)
                 .performanceStatus(performance.getPerformanceStatus())
+                .reservationDay(performance.getReservationDay())
                 .build();
     }
 }
