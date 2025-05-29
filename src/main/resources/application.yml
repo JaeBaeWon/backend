@@ -1,12 +1,13 @@
 spring:
-  #  config:
-  #    import: aws-secretsmanager:secret/backend
+  # config:
+  #   import: aws-secretsmanager:secret/backend
   cloud:
     aws:
       region:
         static: ap-northeast-2
       credentials:
         use-default-aws-credentials-chain: true
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -87,21 +88,18 @@ spring:
 
   kafka:
     bootstrap-servers: ${KAFKA_SERVER}
-
     consumer:
-      group-id: test-group
+      group-id: ticketing-consumer-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
     properties:
       security.protocol: SASL_SSL
       sasl.mechanism: AWS_MSK_IAM
-      sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
+      sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required
       sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
   mail:
