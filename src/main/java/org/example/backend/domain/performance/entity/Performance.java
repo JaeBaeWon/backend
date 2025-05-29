@@ -33,6 +33,8 @@ public class Performance {
 
     private LocalDateTime performanceEndAt;
 
+    private LocalDateTime performanceOpenAt;
+
     private String location;
 
     private String performanceImg;
@@ -47,4 +49,6 @@ public class Performance {
 
     @Enumerated(EnumType.STRING)
     private PerformanceStatus performanceStatus;
+
+    private LocalDateTime reservationDay;
 }
