@@ -143,5 +143,19 @@ iamport:
   api-key: ${IAMPORT-API-KEY}
   api-secret: ${IAMPORT-API-SECRET}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"
+  endpoint:
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+
 server:
   port: 8080
