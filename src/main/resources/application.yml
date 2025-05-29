@@ -1,6 +1,6 @@
 spring:
-#  config:
-#    import: aws-secretsmanager:secret/backend
+  #  config:
+  #    import: aws-secretsmanager:secret/backend
   cloud:
     aws:
       region:
@@ -87,14 +87,22 @@ spring:
 
   kafka:
     bootstrap-servers: ${KAFKA_SERVER}
+
     consumer:
       group-id: test-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: AWS_MSK_IAM
+      sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
+      sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
   mail:
     host: ${MAIL_HOST}
