@@ -32,7 +32,7 @@ public class ReservationKafkaDto {
                 .impUid(payment.getImpUid())
                 .merchantUid(payment.getMerchantUid())
                 .paymentAmount(payment.getPaymentAmount())
-                .payMethod(builder().payMethod)
+                .payMethod(payment.getPayType().name())
                 .build();
     }
 }

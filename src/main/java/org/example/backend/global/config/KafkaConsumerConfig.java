@@ -9,7 +9,6 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import software.amazon.msk.auth.iam.IAMClientCallbackHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,19 +20,29 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    @Value("${KAFKA_USERNAME}")
+    private String kafkaUsername;
+
+    @Value("${KAFKA_PASSWORD}")
+    private String kafkaPassword;
+
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
 
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "default-group"); // 무시됨 (KafkaListener에 지정)
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "ticketing-consumer-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
+        // SASL/SCRAM 인증 설정
         props.put("security.protocol", "SASL_SSL");
-        props.put("sasl.mechanism", "AWS_MSK_IAM");
-        props.put("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
-        props.put("sasl.client.callback.handler.class", IAMClientCallbackHandler.class.getName());
+        props.put("sasl.mechanism", "SCRAM-SHA-512");
+        props.put("sasl.jaas.config", String.format(
+                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";",
+                kafkaUsername,
+                kafkaPassword
+        ));
 
         return new DefaultKafkaConsumerFactory<>(props);
     }

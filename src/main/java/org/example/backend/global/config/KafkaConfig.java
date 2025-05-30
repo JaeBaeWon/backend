@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import software.amazon.msk.auth.iam.IAMClientCallbackHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,18 +18,30 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    @Value("${KAFKA_USERNAME}")
+    private String kafkaUsername;
+
+    @Value("${KAFKA_PASSWORD}")
+    private String kafkaPassword;
+
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
+
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put("security.protocol", "SASL_SSL");
-        configProps.put("sasl.mechanism", "AWS_MSK_IAM");
-        configProps.put("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
-        configProps.put("sasl.client.callback.handler.class", IAMClientCallbackHandler.class.getName());
 
-        // 선택 사항 (추천)
+        // SCRAM 인증 설정
+        configProps.put("security.protocol", "SASL_SSL");
+        configProps.put("sasl.mechanism", "SCRAM-SHA-512");
+        configProps.put("sasl.jaas.config", String.format(
+                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";",
+                kafkaUsername,
+                kafkaPassword
+        ));
+
+        // 권장 설정
         configProps.put(ProducerConfig.ACKS_CONFIG, "all");
         configProps.put(ProducerConfig.RETRIES_CONFIG, 10);
         configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
