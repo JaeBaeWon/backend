@@ -35,11 +35,11 @@ public class KafkaConsumerService {
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
 
-    @KafkaListener(topics = "test-topic", groupId = "test-group")
+    /*@KafkaListener(topics = "test-topic", groupId = "test-group")
     public void listen(String message) {
         System.out.println("Consumed message: " + message);
     }
-
+*/
     @KafkaListener(topics = "reservation", groupId = "reservation-group")
     @Transactional  // 메시지 처리 중 실패하면 전체 롤백
     public void consumeReservation(ConsumerRecord<String, String> record) {

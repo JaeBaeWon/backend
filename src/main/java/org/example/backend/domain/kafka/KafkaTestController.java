@@ -1,3 +1,4 @@
+/*
 package org.example.backend.domain.kafka;
 
 import lombok.RequiredArgsConstructor;
@@ -16,4 +17,4 @@ public class KafkaTestController {
         producerService.sendMessage("test-topic", message);
         return "Message sent: " + message;
     }
-}
+}*/
