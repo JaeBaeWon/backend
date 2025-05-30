@@ -1,8 +1,6 @@
 FROM eclipse-temurin:17-jre
 
-# JAR 복사
-COPY build/libs/backend-0.0.1-SNAPSHOT.jar /app/backend.jar
+COPY build/libs/backend-0.0.1-SNAPSHOT.jar /app/app.jar
 COPY libs/aws-msk-iam-auth-1.1.7-all.jar /app/aws-msk-iam-auth.jar
 
-# javaagent 설정
-ENTRYPOINT ["java", "-javaagent:/app/aws-msk-iam-auth.jar", "-jar", "/app/backend.jar"]
+ENTRYPOINT ["java", "-cp", "/app/aws-msk-iam-auth.jar:/app/app.jar", "org.example.backend.BackendApplication"]
