@@ -35,7 +35,7 @@ public class SecurityConfig {
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource));
 
-        http.cors(withDefaults());
+//        http.cors(withDefaults());
 
         // ✅ 권한 제어
         http.authorizeHttpRequests(auth -> auth
