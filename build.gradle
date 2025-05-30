@@ -102,3 +102,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+springBoot {
+    mainClass = 'org.example.backend.BackendApplication'
+}
+
