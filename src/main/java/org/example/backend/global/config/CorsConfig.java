@@ -15,6 +15,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
+                "https://*.podopicker.store",
                 "https://podopicker.store",
                 "https://www.podopicker.store"
         ));
