@@ -154,6 +154,11 @@ management:
       export:
         enabled: true
 
-
 server:
   port: 8080
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss}","level":"%p","thread":"%t","logger":"%c","message":"%m"}'
