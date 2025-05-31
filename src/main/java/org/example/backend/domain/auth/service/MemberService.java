@@ -139,12 +139,24 @@ public class MemberService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
 
-        user.setGender(request.getGender());
-        user.setZipCode(request.getZipCode());
-        user.setStreetAdr(request.getStreetAdr());
-        user.setDetailAdr(request.getDetailAdr());
-        user.setPhone(request.getPhone());
-        user.setBirthday(request.getBirthDate());
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
+        if (request.getZipCode() != null) {
+            user.setZipCode(request.getZipCode());
+        }
+        if (request.getStreetAdr() != null) {
+            user.setStreetAdr(request.getStreetAdr());
+        }
+        if (request.getDetailAdr() != null) {
+            user.setDetailAdr(request.getDetailAdr());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getBirthDate() != null) {
+            user.setBirthday(request.getBirthDate());
+        }
     }
 
     public MemberProfileResponse getProfile(String email) {

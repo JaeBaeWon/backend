@@ -87,7 +87,9 @@ spring:
       port: 6379
 
   kafka:
-    bootstrap-servers: ${KAFKA_SERVER}
+    # kafka 쓸때만 true로
+    enabled: false
+    bootstrap-servers: ${KAFKA_SERVER:}
     consumer:
       group-id: ticketing-consumer-group
       auto-offset-reset: earliest

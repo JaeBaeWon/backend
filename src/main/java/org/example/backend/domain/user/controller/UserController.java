@@ -33,7 +33,7 @@ public class UserController {
     }
 
     //내 정보 수정
-    @PutMapping("/user/profile")
+    @PatchMapping("/user/profile")
     public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request,
                                                 Authentication auth) {
 
