@@ -89,7 +89,6 @@ spring:
   kafka:
     # kafka 쓸때만 true로
     enabled: false
-
     bootstrap-servers: ${KAFKA_SERVER:}
     consumer:
       group-id: ticketing-consumer-group

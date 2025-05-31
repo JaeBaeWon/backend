@@ -40,7 +40,11 @@ public class KafkaConsumerService {
         System.out.println("Consumed message: " + message);
     }
 */
-    @KafkaListener(topics = "reservation", groupId = "reservation-group")
+    @KafkaListener(
+            topics = "reservation",
+            groupId = "reservation-group",
+            autoStartup = "${spring.kafka.enabled:false}"
+    )
     @Transactional  // 메시지 처리 중 실패하면 전체 롤백
     public void consumeReservation(ConsumerRecord<String, String> record) {
         try {
