@@ -102,6 +102,10 @@ spring:
       #sasl.jaas.config: "software.amazon.msk.auth.iam.IAMLoginModule required;"
       #sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
+    # kafka 안켜도 실행은 되게
+    listener:
+      auto-startup: false
+
   mail:
     host: ${MAIL_HOST}
     port: 587
