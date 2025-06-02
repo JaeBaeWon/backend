@@ -146,14 +146,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: "prometheus"
-  endpoint:
-    prometheus:
-      enabled: true
+        include: health,info,prometheus
   prometheus:
     metrics:
       export:
         enabled: true
+
 
 server:
   port: 8080
