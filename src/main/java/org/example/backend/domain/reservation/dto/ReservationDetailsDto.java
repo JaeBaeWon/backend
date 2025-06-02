@@ -30,6 +30,7 @@ public class ReservationDetailsDto {
     private PayType payType;
     private PaymentStatus paymentStatus;
     private Long seatId;
+    private String seatInfo;
     private Integer paymentAmount;
     private ReservationStatus refundStatus;
     private Integer refundAmount;
@@ -53,6 +54,7 @@ public class ReservationDetailsDto {
                 .payType(payment.getPayType())
                 .paymentStatus(payment.getPaymentStatus())
                 .seatId(reservation.getSeatId().getSeatId())
+                .seatInfo(reservation.getSeatId().getSeatSection() + "구역 " + reservation.getSeatId().getSeatNum() + "번")
                 .paymentAmount(payment.getPaymentAmount())
                 .refundStatus(reservation.getReservationStatus())
                 .refundAmount(payment.getRefundAmount())
