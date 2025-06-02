@@ -63,7 +63,7 @@ public class RefundService {
         var reservation = payment.getReservation();
         reservation.updateReservationStatus(ReservationStatus.CANCELED);
 
-        var seat = reservation.getSeat();
+        var seat = reservation.getSeatId();
         seat.updateStatus(SeatStatus.AVAILABLE);
     }
 }

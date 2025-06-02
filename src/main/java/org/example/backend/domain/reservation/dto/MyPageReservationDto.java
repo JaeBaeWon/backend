@@ -32,7 +32,7 @@ public class MyPageReservationDto {
         return MyPageReservationDto.builder()
                 .reservationId(reservation.getReservationId())
                 .ticketId(reservation.getTicketId()) // reservation.getReservationId() 도 가능
-                .title(reservation.getPerformance().getTitle())
+                .title(reservation.getPerformanceId().getTitle())
                 .reservationDay(reservation.getReservationDate())
                 .performanceStartAt(performance.getPerformanceStartAt())
                 .performanceStatus(performance.getPerformanceStatus())

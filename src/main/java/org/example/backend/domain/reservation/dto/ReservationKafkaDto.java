@@ -25,9 +25,9 @@ public class ReservationKafkaDto {
 
     public static ReservationKafkaDto of(Reservation reservation, Payment payment) {
         return ReservationKafkaDto.builder()
-                .userId(reservation.getUser().getUserId())
-                .performanceId(reservation.getPerformance().getPerformanceId())
-                .seatId(reservation.getSeat().getSeatId())
+                .userId(reservation.getUserId().getUserId())
+                .performanceId(reservation.getPerformanceId().getPerformanceId())
+                .seatId(reservation.getSeatId().getSeatId())
                 .ticketId(reservation.getTicketId())
                 .impUid(payment.getImpUid())
                 .merchantUid(payment.getMerchantUid())

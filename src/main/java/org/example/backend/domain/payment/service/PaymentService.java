@@ -103,9 +103,9 @@ public class PaymentService {
 
     private Reservation createReservationEntity(User user, Performance performance, Seat seat) {
         return Reservation.builder()
-                .user(user)
-                .performance(performance)
-                .seat(seat)
+                .userId(user)
+                .performanceId(performance)
+                .seatId(seat)
                 .reservationStatus(ReservationStatus.RESERVED)
                 .ticketId(UUID.randomUUID().toString().replace("-", "").substring(0, 12))
                 .build();
@@ -138,8 +138,8 @@ public class PaymentService {
         Payment payment = paymentRepository.findByReservation(reservation)
                 .orElseThrow(() -> new RuntimeException("해당 예약의 결제 내역 없음"));
 
-        Performance performance = reservation.getPerformance();
-        Seat seat = reservation.getSeat();
+        Performance performance = reservation.getPerformanceId();
+        Seat seat = reservation.getSeatId();
 
         return PaymentCompleteResponse.builder()
                 .ticketNumber(reservation.getTicketId())

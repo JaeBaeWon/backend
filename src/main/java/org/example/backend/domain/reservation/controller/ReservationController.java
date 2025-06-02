@@ -57,8 +57,8 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> getCheckoutInfo(@PathVariable Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
-        User user = reservation.getUser();
-        Performance performance = reservation.getPerformance();
+        User user = reservation.getUserId();
+        Performance performance = reservation.getPerformanceId();
 
         System.out.println("user: " + user.getUsername() + ", price: " + performance.getPrice());
 

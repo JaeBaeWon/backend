@@ -22,9 +22,9 @@ public class ReservationResponse {
             return ReservationResponse.builder()
                     .reservationId(reservation.getReservationId())
                     .ticketId(reservation.getTicketId())
-                    .userId(reservation.getUser().getUserId())
-                    .performanceId(reservation.getPerformance().getPerformanceId())
-                    .seatId(reservation.getSeat().getSeatId())
+                    .userId(reservation.getUserId().getUserId())
+                    .performanceId(reservation.getPerformanceId().getPerformanceId())
+                    .seatId(reservation.getSeatId().getSeatId())
                     .build();
     }
 }

@@ -62,9 +62,9 @@ public class ReservationService {
 
         // 예약 생성
         Reservation reservation = Reservation.builder()
-                .user(user)
-                .performance(performance)
-                .seat(seat)
+                .userId(user)
+                .performanceId(performance)
+                .seatId(seat)
                 .reservationStatus(ReservationStatus.PENDING)  // 결제 전 상태
                 .ticketId(UUID.randomUUID().toString().replace("-", "").substring(0, 12))        // 티켓 고유 ID
                 .build();

@@ -220,7 +220,7 @@ public class MemberService {
         List<Reservation> reservations = reservationRepository.findByUserEmailOrderByPaymentDateDesc(email);
 
         return reservations.stream()
-                .map(reservation -> MyPageReservationDto.of(reservation, reservation.getPerformance()))
+                .map(reservation -> MyPageReservationDto.of(reservation, reservation.getPerformanceId()))
                 .toList(); // Java 16+
         // Java 8 사용 시
         // .collect(Collectors.toList());
