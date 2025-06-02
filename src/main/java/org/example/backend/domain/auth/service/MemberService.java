@@ -67,10 +67,6 @@ public class MemberService {
         userRepository.save(user);
     }
 
-    public boolean isOnboardingComplete(String email) {
-        return userRepository.findByEmail(email).map(this::isOnboardingComplete).orElse(false);
-    }
-
     public RefreshToken getRefreshTokenByEmail(String email) {
         return refreshTokenRepository.findByEmail(email).orElseThrow(() -> new CustomException(ExceptionContent.EXPIRED_TOKEN));
     }
@@ -112,10 +108,14 @@ public class MemberService {
         return MemberDto.of(user);
     }
 
+    public boolean isOnboardingComplete(String email) {
+        return userRepository.findByEmail(email).map(this::isOnboardingComplete).orElse(false);
+    }
 
     public boolean isOnboardingComplete(User user) {
-        return user.getGender() != null && user.getZipCode() != null && user.getStreetAdr() != null && user.getDetailAdr() != null && user.getPhone() != null && user.getBirthday() != null;
+        return user.isOnboardingCompleted();
     }
+
 
     @Transactional
     public void updateOnboardingInfo(String email, String gender, String zip, String street,
