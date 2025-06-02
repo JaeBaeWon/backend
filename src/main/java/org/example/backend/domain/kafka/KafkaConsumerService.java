@@ -35,17 +35,14 @@ public class KafkaConsumerService {
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
 
-    /*@KafkaListener(topics = "test-topic", groupId = "test-group")
-    public void listen(String message) {
-        System.out.println("Consumed message: " + message);
-    }
-*/
-    @KafkaListener(
-            topics = "reservation",
-            groupId = "reservation-group",
-            autoStartup = "${spring.kafka.enabled:false}"
-    )
-    @Transactional  // 메시지 처리 중 실패하면 전체 롤백
+    /*
+     * @KafkaListener(topics = "test-topic", groupId = "test-group")
+     * public void listen(String message) {
+     * System.out.println("Consumed message: " + message);
+     * }
+     */
+    @KafkaListener(topics = "reservation", groupId = "reservation-group", autoStartup = "${spring.kafka.enabled:false}")
+    @Transactional // 메시지 처리 중 실패하면 전체 롤백
     public void consumeReservation(ConsumerRecord<String, String> record) {
         try {
             String message = record.value();
@@ -93,7 +90,7 @@ public class KafkaConsumerService {
 
         } catch (Exception e) {
             System.err.println("❌ Kafka Consumer 처리 실패: " + e.getMessage());
-            throw new RuntimeException(e);  // Kafka가 메시지를 재시도하도록 예외 재발생
+            throw new RuntimeException(e); // Kafka가 메시지를 재시도하도록 예외 재발생
         }
     }
 }

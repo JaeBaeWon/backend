@@ -89,7 +89,7 @@ spring:
   kafka:
     # kafka 쓸때만 true로
     enabled: true
-    bootstrap-servers: ${KAFKA_SERVER:}
+    bootstrap-servers: ${KAFKA_SERVER}
     consumer:
       group-id: ticketing-consumer-group
       auto-offset-reset: earliest
@@ -101,8 +101,7 @@ spring:
     properties:
       security.protocol: SASL_SSL
       sasl.mechanism: SCRAM-SHA-512
-      #sasl.jaas.config: "software.amazon.msk.auth.iam.IAMLoginModule required;"
-      #sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
 
   mail:
     host: ${MAIL_HOST}

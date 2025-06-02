@@ -18,7 +18,7 @@ import java.util.Map;
 @ConditionalOnProperty(name = "spring.kafka.enabled", havingValue = "true")
 public class KafkaConsumerConfig {
 
-    @Value("${spring.kafka.bootstrap-servers}")
+    @Value("${KAFKA_SERVER}")
     private String bootstrapServers;
 
     @Value("${KAFKA_USERNAME}")
