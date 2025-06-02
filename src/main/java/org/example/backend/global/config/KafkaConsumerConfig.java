@@ -42,8 +42,7 @@ public class KafkaConsumerConfig {
         props.put("sasl.jaas.config", String.format(
                 "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";",
                 kafkaUsername,
-                kafkaPassword
-        ));
+                kafkaPassword));
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
