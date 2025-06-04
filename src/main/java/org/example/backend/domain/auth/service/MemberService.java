@@ -220,7 +220,7 @@ public class MemberService {
         List<Reservation> reservations = reservationRepository.findByUserEmailOrderByPaymentDateDesc(email);
 
         return reservations.stream()
-                .map(reservation -> MyPageReservationDto.of(reservation, reservation.getPerformanceId()))
+                .map(reservation -> MyPageReservationDto.of(reservation, reservation.getPerformance()))
                 .toList(); // Java 16+
         // Java 8 사용 시
         // .collect(Collectors.toList());
@@ -237,27 +237,37 @@ public class MemberService {
         Certification cert = certificationRepository.findTopByEmailAndPhoneOrderByCreatedAtDesc(request.getEmail(), normalizedPhone).orElse(null);
 
         if (cert == null || !bCryptPasswordEncoder.matches(request.getCode(), cert.getCertificationNumber())) {
-            return PasswordResetResponseDto.builder().message("❌ 인증번호가 일치하지 않습니다.").build();
+            return PasswordResetResponseDto.builder()
+                    .message("❌ 인증번호가 일치하지 않습니다.").build();
         }
 
         if (cert.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(CERTIFICATION_EXPIRATION_MINUTES))) {
-            return PasswordResetResponseDto.builder().success(false).message("❌ 인증번호가 만료되었습니다.").build();
+            return PasswordResetResponseDto.builder()
+                    .success(false).message("❌ 인증번호가 만료되었습니다.").build();
         }
 
-        User user = userRepository.findByEmail(request.getEmail()).filter(m -> normalizedPhone.equals(m.getPhone().replace("-", ""))).filter(m -> request.getBirthday().equals(m.getBirthday())).orElse(null);
+        User user = userRepository.findByEmail(request.getEmail())
+                .filter(m -> normalizedPhone
+                        .equals(m.getPhone()
+                        .replace("-", "")))
+                .filter(m -> request.getBirthday()
+                        .equals(m.getBirthday())).orElse(null);
 
         if (user == null) {
-            return PasswordResetResponseDto.builder().success(false).message("❌ 가입된 사용자를 찾을 수 없습니다.").build();
+            return PasswordResetResponseDto.builder()
+                    .success(false).message("❌ 가입된 사용자를 찾을 수 없습니다.").build();
         }
 
         if (!request.getNewPassword().equals(request.getNewPasswordCheck())) {
-            return PasswordResetResponseDto.builder().success(false).message("❌ 새 비밀번호가 일치하지 않습니다.").build();
+            return PasswordResetResponseDto.builder()
+                    .success(false).message("❌ 새 비밀번호가 일치하지 않습니다.").build();
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        return PasswordResetResponseDto.builder().success(true).message("✅ 비밀번호가 성공적으로 변경되었습니다.").build();
+        return PasswordResetResponseDto.builder()
+                .success(true).message("✅ 비밀번호가 성공적으로 변경되었습니다.").build();
     }
 
 
