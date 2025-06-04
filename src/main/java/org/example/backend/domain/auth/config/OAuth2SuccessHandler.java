@@ -1,7 +1,6 @@
 package org.example.backend.domain.auth.config;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -25,7 +25,8 @@ import java.time.LocalDateTime;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
-    private final UserRepository userRepository; // 이걸 추가해서 User 정보를 가져옵니다.
+    private final UserRepository userRepository; // User 정보를 가져오기 위한 repository
+    private final RefreshTokenRepository refreshTokenRepository; // RefreshToken을 DB에 저장할 repository
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -49,23 +50,30 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), email, user.getRole().name());
         String refreshToken = jwtUtil.createRefreshToken(email);
 
-        // ✅ AccessToken, RefreshToken 쿠키 전달
-        Cookie accessCookie = new Cookie("accessToken", accessToken);
-        accessCookie.setHttpOnly(true);
-        accessCookie.setSecure(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(60 * 30); // 30분
-        accessCookie.setAttribute("SameSite", "None");
+        // ✅ AccessToken 쿠키 생성
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 30) // 30분
+                .sameSite("None") // SameSite 설정
+                .build();
 
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(60 * 60 * 24 * 14); // 14일
-        refreshCookie.setAttribute("SameSite", "None");
+        // ✅ RefreshToken 쿠키 생성
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 60 * 24 * 14) // 14일
+                .sameSite("None") // SameSite 설정
+                .build();
 
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+        response.addHeader("Set-Cookie", accessCookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
+
+        // ✅ RefreshToken을 DB에 저장 (새로 생성한 refreshToken)
+        RefreshToken refreshTokenEntity = new RefreshToken(user, refreshToken, LocalDateTime.now());
+        refreshTokenRepository.save(refreshTokenEntity);
 
         // ✅ 리디렉션 URL 생성 (온보딩 여부는 필터에서 처리)
         String redirectUrl = UriComponentsBuilder

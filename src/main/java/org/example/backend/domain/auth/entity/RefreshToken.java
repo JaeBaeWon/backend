@@ -30,4 +30,10 @@ public class RefreshToken {
         this.token = token;
         this.expiration = LocalDateTime.now().plusDays(3); // 기본 3일 유효
     }
+
+    public RefreshToken(User user, String token, LocalDateTime expiration) {
+        this.email = user.getEmail(); // user로부터 이메일 추출
+        this.token = token;
+        this.expiration = expiration;
+    }
 }
