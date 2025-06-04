@@ -1,5 +1,6 @@
 package org.example.backend.domain.seat.controller;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.auth.service.MemberService;
 import org.example.backend.domain.seat.dto.SeatStatusDto;
@@ -36,17 +37,26 @@ public class SeatController {
      * 좌석 선택 시 선점 시도 (락 획득 + Redis에 선점 정보 저장)
      */
     @PostMapping("/try/{seatId}")
-    public ResponseEntity<String> trySelectSeat(@PathVariable Long seatId, Authentication auth) {
+    public ResponseEntity<Map<String, Object>> trySelectSeat(@PathVariable Long seatId, Authentication auth) {
 
         boolean check = memberService.isAuthenticated(auth);
-        if (!check) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (!check) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    Map.of("seatId", seatId, "status", "UNAUTHORIZED", "message", "로그인이 필요합니다.")
+            );
+        }
 
         boolean result = seatService.tryLockSeat(seatId);
         if (result) {
-            return ResponseEntity.ok("좌석 선점 성공. 결제 페이지로 이동하세요.");
+            return ResponseEntity.ok(
+                    Map.of("seatId", seatId, "status", "SUCCESS", "message", "좌석 선점 성공")
+            );
         } else {
-            return ResponseEntity.badRequest().body("이미 선점된 좌석입니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    Map.of("seatId", seatId, "status", "FAILED", "message", "이미 선점된 좌석입니다.")
+            );
         }
     }
+
 
 }

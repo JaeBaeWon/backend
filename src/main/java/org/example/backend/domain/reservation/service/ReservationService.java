@@ -2,6 +2,7 @@ package org.example.backend.domain.reservation.service;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
@@ -92,7 +93,7 @@ public class ReservationService {
     // 예약 상태 저장
     public void setPendingStatus(Long userId, Long seatId) {
         String key = buildKey(userId, seatId);
-        redissonClient.getBucket(key).set("PENDING");
+        redissonClient.getBucket(key).set("PENDING", 3, TimeUnit.MINUTES);
     }
 
     private String buildKey(Long userId, Long seatId) {
