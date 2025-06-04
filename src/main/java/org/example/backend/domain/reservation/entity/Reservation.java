@@ -26,17 +26,17 @@ public class Reservation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     private LocalDateTime reservationDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
-    private Performance performanceId;
+    private Performance performance;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")
-    private Seat seatId;
+    private Seat seat;
 
     // 기존 메서드
     public void updateReservationStatus(ReservationStatus status) {
