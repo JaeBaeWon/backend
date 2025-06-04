@@ -1,47 +1,34 @@
-package org.example.backend.domain.auth.config;
-
 import org.example.backend.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
 
     private final User user;
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     public CustomOauth2UserDetails(User user, Map<String, Object> attributes) {
-
-        this.user = user; //1
+        this.user = user;
         this.attributes = attributes;
     }
 
-
     @Override
     public Map<String, Object> getAttributes() {
-        return attributes;
+        return attributes != null ? attributes : Map.of();
     }
 
     @Override
     public String getName() {
-        return user.getEmail();
+        return user.getProvider() + "_" + user.getProviderId(); // OAuth2 식별자
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new ArrayList<>();
-        collection.add(new GrantedAuthority() {
-            @Override
-            public String getAuthority() {
-                return user.getRole().name();
-            }
-        });
-
-        return collection;
+        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override
@@ -74,4 +61,7 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
         return true;
     }
 
+    public User getUser() {
+        return user;
+    }
 }

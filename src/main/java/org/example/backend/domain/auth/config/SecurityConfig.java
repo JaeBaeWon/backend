@@ -28,6 +28,7 @@ public class SecurityConfig {
         private final JWTFilter jwtFilter;
         private final OnboardingFilter onboardingFilter;
         private final CorsConfigurationSource corsConfigurationSource;
+        private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,7 +42,7 @@ public class SecurityConfig {
                                                 "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
                                                 "/oauth2/**", "/health", "/error", "/performance/**",
                                                 "/auth/check-duplicate", "/seat/**", "/actuator/**",
-                                                "/onboarding" // ✅ 온보딩 경로 인증 없이 허용
+                                                "/auth/onboarding" // ✅ 온보딩 경로 인증 없이 허용
                                 ).permitAll()
                                 .anyRequest().authenticated());
 
@@ -53,7 +54,7 @@ public class SecurityConfig {
                 http.oauth2Login(auth -> auth
                                 .loginPage("/auth/login")
                                 .authorizationEndpoint(config -> config.authorizationRequestResolver(customResolver))
-                                .defaultSuccessUrl("/")
+                                .successHandler(oAuth2SuccessHandler)
                                 .failureUrl("/auth/login?error=true")
                                 .permitAll());
 

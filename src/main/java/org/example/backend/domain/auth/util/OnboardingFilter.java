@@ -30,8 +30,8 @@ public class OnboardingFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         // ✅ 온보딩 페이지는 필터 제외
-        if (uri.startsWith("/onboarding") || uri.startsWith("/css") || uri.startsWith("/js")
-                || uri.startsWith("/images")) {
+        if (uri.startsWith("/onboarding") || uri.startsWith("/auth/onboarding")
+                || uri.startsWith("/css") || uri.startsWith("/js") || uri.startsWith("/images")) {
             filterChain.doFilter(request, response);
             return;
         }
