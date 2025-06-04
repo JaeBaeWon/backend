@@ -3,6 +3,8 @@ package org.example.backend.domain.payment.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siot.IamportRestClient.IamportClient;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.payment.dto.request.PaymentVerificationRequest;
 import org.example.backend.domain.payment.dto.response.PaymentCompleteResponse;
@@ -48,6 +50,7 @@ public class PaymentService {
     private final RedissonClient redissonClient;
     private final ReservationService reservationService;
 
+    //redis queue에 어디까지 batch 돌렸는지 기록
     @Transactional
     public ReservationResponse verifyAndQueueReservation(PaymentVerificationRequest request) throws Exception {
         var paymentInfo = verifyPaymentWithIamport(request.getImpUid());
@@ -81,6 +84,10 @@ public class PaymentService {
 
         // Redis Queue에 전송
         redissonClient.getQueue("reservation:queue").add(objectMapper.writeValueAsString(dto));
+
+        // ✅ Redisson 기반으로 PENDING 캐시 저장
+        String reservationCacheKey = "reservation:result:" + ticketId;
+        redissonClient.getBucket(reservationCacheKey).set("PENDING", 3, TimeUnit.MINUTES);
 
         return ReservationResponse.builder()
                 .userId(user.getUserId())

@@ -1,5 +1,6 @@
 package org.example.backend.domain.reservation.service;
 
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.performance.entity.Performance;
@@ -37,6 +38,24 @@ public class ReservationService {
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
     private final RedissonClient redissonClient;
+
+    public Map<String, Object> getReservationStatusByTicketId(String ticketId) {
+        Optional<Map<String, Object>> result = reservationRepository.findByTicketId(ticketId)
+                .<Map<String, Object>>map(reservation -> Map.of("reservationId", reservation.getReservationId()))
+                .or(() -> {
+                    String key = "reservation:result:" + ticketId;
+                    RBucket<String> bucket = redissonClient.getBucket(key);
+                    String cached = bucket.get();
+
+                    if ("PENDING".equals(cached)) {
+                        return Optional.of(Map.of("status", "PENDING"));
+                    }
+                    return Optional.empty();
+                });
+
+
+        return result.orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
+    }
 
     // 예약 상태 조회
     public String getReservationStatus(Long userId, Long seatId) {
