@@ -23,62 +23,55 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JWTUtil jwtUtil;
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final JWTFilter jwtFilter;
-    private final OnboardingFilter onboardingFilter;
+        private final JWTUtil jwtUtil;
+        private final ClientRegistrationRepository clientRegistrationRepository;
+        private final JWTFilter jwtFilter;
+        private final OnboardingFilter onboardingFilter;
+        private final CorsConfigurationSource corsConfigurationSource;
 
-    private final CorsConfigurationSource corsConfigurationSource;
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http.cors(cors -> cors.configurationSource(corsConfigurationSource));
+                http.cors(withDefaults());
 
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource));
+                http.authorizeHttpRequests(auth -> auth
+                                .requestMatchers(
+                                                "/auth/login", "/auth/join", "/auth/refresh",
+                                                "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
+                                                "/oauth2/**", "/health", "/error", "/performance/**",
+                                                "/auth/check-duplicate", "/seat/**", "/actuator/**",
+                                                "/onboarding" // ✅ 온보딩 경로 인증 없이 허용
+                                ).permitAll()
+                                .anyRequest().authenticated());
 
-        http.cors(withDefaults());
+                http.formLogin(auth -> auth.disable());
 
-        // ✅ 권한 제어
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/auth/login", "/auth/join", "/auth/refresh",
-                        "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
-                        "/oauth2/**",  "health", "/error", "/performance/**",
-                        "/auth/check-duplicate", "/seat/**", "/actuator/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-        );
+                OAuth2AuthorizationRequestResolver customResolver = new CustomAuthorizationRequestResolver(
+                                clientRegistrationRepository, "/oauth2/authorization");
 
-        http.formLogin(auth -> auth.disable());
+                http.oauth2Login(auth -> auth
+                                .loginPage("/auth/login")
+                                .authorizationEndpoint(config -> config.authorizationRequestResolver(customResolver))
+                                .defaultSuccessUrl("/")
+                                .failureUrl("/auth/login?error=true")
+                                .permitAll());
 
-        // ✅ OAuth2 로그인 설정
-        OAuth2AuthorizationRequestResolver customResolver =
-                new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+                http.logout(auth -> auth
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("/auth/login")
+                                .permitAll());
 
-        http.oauth2Login(auth -> auth
-                .loginPage("/auth/login")
-                .authorizationEndpoint(config -> config.authorizationRequestResolver(customResolver))
-                .defaultSuccessUrl("/")
-                .failureUrl("/auth/login?error=true")
-                .permitAll()
-        );
+                http.csrf(csrf -> csrf.disable());
 
-        http.logout(auth -> auth
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/auth/login")
-                .permitAll()
-        );
+                http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                http.addFilterAfter(onboardingFilter, JWTFilter.class);
 
-        http.csrf(csrf -> csrf.disable());
+                return http.build();
+        }
 
-        // ✅ 필터 순서 등록: JWTFilter → OnboardingFilter
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(onboardingFilter, JWTFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public BCryptPasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 }
