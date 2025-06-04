@@ -2,9 +2,12 @@ package org.example.backend.domain.performance.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.auth.service.MemberService;
+import org.example.backend.domain.performance.dto.PerformanceRequestDto;
 import org.example.backend.domain.performance.dto.response.PerformDetailRes;
 import org.example.backend.domain.performance.dto.response.PerformRes;
+import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.service.PerformanceService;
+import org.example.backend.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,5 +76,48 @@ public class PerformanceController {
         PerformDetailRes performDetailRes = performanceService.getPerformDetail(performId);
 
         return ResponseEntity.ok().body(performDetailRes);
+    }
+
+
+    // ---------- MANAGER가 performance CRUD
+
+    // 공연 등록
+    @PostMapping
+    public ResponseEntity<?> createPerformance(@RequestBody PerformanceRequestDto dto,
+                                               Authentication auth) {
+        String email = auth.getName();
+        User manager = memberService.getUserByEmail(email); // 또는 userRepository.findByEmail
+        performanceService.createPerformance(dto, manager);
+        return ResponseEntity.ok("공연 등록 완료");
+    }
+
+    // 관리자별 공연 목록 조회
+    @GetMapping("/manage/my")
+    public ResponseEntity<List<Performance>> getMyPerformances(Authentication auth) {
+        String email = auth.getName();
+        User manager = memberService.getUserByEmail(email);
+        List<Performance> performances = performanceService.getMyPerformances(manager);
+        return ResponseEntity.ok(performances);
+    }
+
+    // 공연 수정
+    @PutMapping("/manage/{id}")
+    public ResponseEntity<?> updatePerformance(@PathVariable Long id,
+                                               @RequestBody PerformanceRequestDto dto,
+                                               Authentication auth) {
+        String email = auth.getName();
+        User manager = memberService.getUserByEmail(email);
+        performanceService.updatePerformance(id, dto, manager);
+        return ResponseEntity.ok("공연 수정 완료");
+    }
+
+    // 공연 삭제
+    @DeleteMapping("/manage/{id}")
+    public ResponseEntity<?> deletePerformance(@PathVariable Long id,
+                                               Authentication auth) {
+        String email = auth.getName();
+        User manager = memberService.getUserByEmail(email);
+        performanceService.deletePerformance(id, manager);
+        return ResponseEntity.ok("공연 삭제 완료");
     }
 }

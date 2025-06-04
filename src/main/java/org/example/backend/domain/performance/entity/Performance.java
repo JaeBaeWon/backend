@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.backend.domain.performance.dto.PerformanceRequestDto;
+import org.example.backend.domain.user.entity.User;
 
 
 @Entity
@@ -51,4 +53,25 @@ public class Performance {
     private PerformanceStatus performanceStatus;
 
     private LocalDateTime reservationDay;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public void updateFromDto(PerformanceRequestDto dto) {
+        this.title = dto.getTitle();
+        this.description = dto.getDescription();
+        this.category = dto.getCategory();
+        this.performanceCode = dto.getPerformanceCode();
+        this.performanceStartAt = dto.getPerformanceStartAt();
+        this.performanceEndAt = dto.getPerformanceEndAt();
+        this.performanceOpenAt = dto.getPerformanceOpenAt();
+        this.location = dto.getLocation();
+        this.performanceImg = dto.getPerformanceImg();
+        this.price = dto.getPrice();
+        this.totalSeats = dto.getTotalSeats();
+        this.remainSeats = dto.getTotalSeats();
+        this.performanceStatus = dto.getPerformanceStatus();
+        this.reservationDay = LocalDateTime.now();
+    }
 }

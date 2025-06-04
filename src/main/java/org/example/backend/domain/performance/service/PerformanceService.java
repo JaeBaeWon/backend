@@ -1,6 +1,7 @@
 package org.example.backend.domain.performance.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.domain.performance.dto.PerformanceRequestDto;
 import org.example.backend.domain.performance.dto.response.PerformDetailRes;
 import org.example.backend.domain.performance.dto.response.PerformRes;
 import org.example.backend.domain.performance.entity.Performance;
@@ -8,11 +9,13 @@ import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.seat.entity.Seat;
 import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
+import org.example.backend.domain.user.entity.User;
 import org.example.backend.global.exception.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.example.backend.global.exception.ExceptionContent.NOT_FOUND_PERFORMANCE;
@@ -87,6 +90,61 @@ public class PerformanceService {
                 .orElseThrow(() -> new CustomException(NOT_FOUND_PERFORMANCE));
 
         return performance;
+    }
+
+
+    // ---------- MANAGER가 performance CRUD
+
+    // 관리자별 공연 목록 조회
+    public List<Performance> getMyPerformances(User user) {
+        return performanceRepository.findByUser(user);
+    }
+
+    // 공연 등록
+    public Performance createPerformance(PerformanceRequestDto dto, User user) {
+        Performance performance = Performance.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .category(dto.getCategory())
+                .performanceCode(dto.getPerformanceCode())
+                .performanceStartAt(dto.getPerformanceStartAt())
+                .performanceEndAt(dto.getPerformanceEndAt())
+                .performanceOpenAt(dto.getPerformanceOpenAt())
+                .location(dto.getLocation())
+                .performanceImg(dto.getPerformanceImg())
+                .price(dto.getPrice())
+                .totalSeats(dto.getTotalSeats())
+                .remainSeats(dto.getTotalSeats())
+                .performanceStatus(dto.getPerformanceStatus())
+                .reservationDay(LocalDateTime.now())
+                .user(user)
+                .build();
+        return performanceRepository.save(performance);
+    }
+
+    // 공연 수정
+    public void updatePerformance(Long id, PerformanceRequestDto dto, User user) {
+        Performance existing = performanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("공연이 존재하지 않습니다."));
+
+        if (!existing.getUser().getUserId().equals(user.getUserId())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        existing.updateFromDto(dto);
+        performanceRepository.save(existing);
+    }
+
+    // 공연 삭제
+    public void deletePerformance(Long id, User user) {
+        Performance performance = performanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("공연이 존재하지 않습니다."));
+
+        if (!performance.getUser().getUserId().equals(user.getUserId())) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        performanceRepository.delete(performance);
     }
 
 }

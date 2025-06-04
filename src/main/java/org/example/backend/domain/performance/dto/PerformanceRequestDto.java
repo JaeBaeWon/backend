@@ -1,4 +1,4 @@
-package org.example.backend.domain.manage.dto;
+package org.example.backend.domain.performance.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class ManageRequestDto {
+public class PerformanceRequestDto {
     private String title;
     private String description;
     private PerformanceCategory category;
