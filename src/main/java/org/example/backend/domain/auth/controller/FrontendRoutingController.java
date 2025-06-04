@@ -23,6 +23,6 @@ public class FrontendRoutingController {
             "/show/ranking" // 랭킹
     })
     public String redirect() {
-        return "forward:/index.html";
+        return "forward:/index.html"; // React가 처리하는 SPA 경로로 리디렉션
     }
 }

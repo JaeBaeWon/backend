@@ -40,12 +40,13 @@ public class OnboardingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
         log.debug("[OnboardingFilter] 요청 URI: {}", uri);
 
+        // 필터 제외 경로
         for (String path : EXCLUDED_PATHS) {
             if (uri.startsWith(path)) {
                 log.debug("[OnboardingFilter] 필터 제외 대상 URI → {}", uri);
@@ -61,10 +62,11 @@ public class OnboardingFilter extends OncePerRequestFilter {
             Object principal = auth.getPrincipal();
             String email = null;
 
+            // 인증된 사용자가 UserDetails나 OAuth2User일 경우 이메일 추출
             if (principal instanceof UserDetails userDetails) {
-                email = userDetails.getUsername();
+                email = userDetails.getUsername(); // 기본 로그인 사용자
             } else if (principal instanceof OAuth2User oAuth2User) {
-                Object attr = oAuth2User.getAttribute("email");
+                Object attr = oAuth2User.getAttribute("email"); // OAuth2 로그인 사용자 이메일 추출
                 email = attr != null ? attr.toString() : null;
             }
 
@@ -77,7 +79,7 @@ public class OnboardingFilter extends OncePerRequestFilter {
                     log.debug("[OnboardingFilter] 사용자 ROLE: {}, Onboarding 상태: {}",
                             user.getRole(), user.isOnboardingCompleted());
 
-                    // ✅ CONSUMER일 때만 온보딩 검사
+                    // CONSUMER일 때만 온보딩 여부 체크
                     if (user.getRole() == UserRole.CONSUMER && !user.isOnboardingCompleted()) {
                         log.info("[OnboardingFilter] {} (CONSUMER) 온보딩 미완료 → /auth/onboarding 으로 리디렉션", email);
                         response.sendRedirect(request.getContextPath() + "/auth/onboarding");
