@@ -68,28 +68,30 @@ public class MemberService {
     }
 
     public RefreshToken getRefreshTokenByEmail(String email) {
-        return refreshTokenRepository.findByEmail(email).orElseThrow(() -> new CustomException(ExceptionContent.EXPIRED_TOKEN));
+        return refreshTokenRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ExceptionContent.EXPIRED_TOKEN));
     }
 
-
     public LoginResponseDto login(LoginRequest loginRequest) {
-        User user = userRepository.findByEmail(loginRequest.getEmail()).filter(m -> bCryptPasswordEncoder.matches(loginRequest.getPassword(), m.getPassword())).orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .filter(m -> bCryptPasswordEncoder.matches(loginRequest.getPassword(), m.getPassword()))
+                .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
 
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
         refreshTokenRepository.findByEmail(user.getEmail()).ifPresentOrElse(existing -> {
             existing.setToken(refreshToken);
             existing.setExpiration(LocalDateTime.now().plusDays(14));
             refreshTokenRepository.save(existing);
-        }, () -> refreshTokenRepository.save(new RefreshToken(null, user.getEmail(), refreshToken, LocalDateTime.now().plusDays(14))));
+        }, () -> refreshTokenRepository
+                .save(new RefreshToken(null, user.getEmail(), refreshToken, LocalDateTime.now().plusDays(14))));
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), user.getEmail(), user.getRole().name());
 
-        return LoginResponseDto.builder().email(user.getEmail()).userName(user.getUsername()).role(user.getRole().name()).accessToken(accessToken).refreshToken(refreshToken).build();
+        return LoginResponseDto.builder().email(user.getEmail()).userName(user.getUsername())
+                .role(user.getRole().name()).accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
-
-    public ReservationDetailsDto
-    getReservationByIdAndLoginId(Long reservationId, String email) {
+    public ReservationDetailsDto getReservationByIdAndLoginId(Long reservationId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_USER));
 
@@ -102,9 +104,9 @@ public class MemberService {
         return ReservationDetailsDto.of(reservation, payment);
     }
 
-
     public MemberDto getLoginMemberByEmail(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
         return MemberDto.of(user);
     }
 
@@ -116,10 +118,9 @@ public class MemberService {
         return user.isOnboardingCompleted();
     }
 
-
     @Transactional
     public void updateOnboardingInfo(String email, String gender, String zip, String street,
-                                     String detail, String phone, LocalDate birthDate) {
+            String detail, String phone, LocalDate birthDate) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
 
@@ -173,11 +174,11 @@ public class MemberService {
                 .build();
     }
 
-
     public String sendCertificationNumberForReset(String email, String phone, LocalDate birthday) {
         final String normalizedPhone = phone.replace("-", "");
 
-        Optional<User> memberOpt = userRepository.findByEmail(email).filter(m -> normalizedPhone.equals(m.getPhone().replace("-", "")) && birthday.equals(m.getBirthday()));
+        Optional<User> memberOpt = userRepository.findByEmail(email)
+                .filter(m -> normalizedPhone.equals(m.getPhone().replace("-", "")) && birthday.equals(m.getBirthday()));
 
         if (memberOpt.isEmpty()) {
             return "입력하신 정보로 가입된 사용자가 없습니다.";
@@ -199,7 +200,8 @@ public class MemberService {
         String code = generateCertificationCode();
         String saveCode = encryptCode ? bCryptPasswordEncoder.encode(code) : code;
 
-        certificationRepository.save(Certification.builder().email(email).phone(phone).certificationNumber(saveCode).createdAt(LocalDateTime.now()).build());
+        certificationRepository.save(Certification.builder().email(email).phone(phone).certificationNumber(saveCode)
+                .createdAt(LocalDateTime.now()).build());
 
         try {
             smsUtil.sendOne(phone, code);
@@ -212,9 +214,13 @@ public class MemberService {
     }
 
     public FindIdResponseDto verifyCodeAndFindId(SmsVerifyIdRequest request) {
-        return certificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone()).filter(cert -> isValidCertification(cert, request.getCode())).flatMap(cert -> userRepository.findByEmail(cert.getEmail())).filter(member -> request.getBirthday().equals(member.getBirthday())).map(member -> FindIdResponseDto.builder().email(member.getEmail()).message("✅ 인증번호가 확인되었습니다.").build()).orElse(FindIdResponseDto.builder().email(null).message("❌ 인증번호가 일치하지 않거나, 만료되었습니다.").build());
+        return certificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone())
+                .filter(cert -> isValidCertification(cert, request.getCode()))
+                .flatMap(cert -> userRepository.findByEmail(cert.getEmail()))
+                .filter(member -> request.getBirthday().equals(member.getBirthday()))
+                .map(member -> FindIdResponseDto.builder().email(member.getEmail()).message("✅ 인증번호가 확인되었습니다.").build())
+                .orElse(FindIdResponseDto.builder().email(null).message("❌ 인증번호가 일치하지 않거나, 만료되었습니다.").build());
     }
-
 
     public List<MyPageReservationDto> getReservationsForUser(String email) {
         List<Reservation> reservations = reservationRepository.findByUserEmailOrderByPaymentDateDesc(email);
@@ -234,7 +240,8 @@ public class MemberService {
     public PasswordResetResponseDto verifyResetCodeAndChangePassword(ResetPasswordRequest request) {
         final String normalizedPhone = request.getPhone().replace("-", "");
 
-        Certification cert = certificationRepository.findTopByEmailAndPhoneOrderByCreatedAtDesc(request.getEmail(), normalizedPhone).orElse(null);
+        Certification cert = certificationRepository
+                .findTopByEmailAndPhoneOrderByCreatedAtDesc(request.getEmail(), normalizedPhone).orElse(null);
 
         if (cert == null || !bCryptPasswordEncoder.matches(request.getCode(), cert.getCertificationNumber())) {
             return PasswordResetResponseDto.builder()
@@ -249,9 +256,10 @@ public class MemberService {
         User user = userRepository.findByEmail(request.getEmail())
                 .filter(m -> normalizedPhone
                         .equals(m.getPhone()
-                        .replace("-", "")))
+                                .replace("-", "")))
                 .filter(m -> request.getBirthday()
-                        .equals(m.getBirthday())).orElse(null);
+                        .equals(m.getBirthday()))
+                .orElse(null);
 
         if (user == null) {
             return PasswordResetResponseDto.builder()
@@ -270,13 +278,13 @@ public class MemberService {
                 .success(true).message("✅ 비밀번호가 성공적으로 변경되었습니다.").build();
     }
 
-
     private String generateCertificationCode() {
         return String.format("%06d", (int) (Math.random() * 1_000_000));
     }
 
     private boolean isValidCertification(Certification cert, String inputCode) {
-        return bCryptPasswordEncoder.matches(inputCode, cert.getCertificationNumber()) && cert.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(CERTIFICATION_EXPIRATION_MINUTES));
+        return bCryptPasswordEncoder.matches(inputCode, cert.getCertificationNumber())
+                && cert.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(CERTIFICATION_EXPIRATION_MINUTES));
     }
 
 }
