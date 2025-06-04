@@ -69,7 +69,7 @@ public class EmailService {
             Seat seat = seatRepository.findByPerformance(p);
 
             // 템플릿 불러오기
-            String html = readTemplate("templates/email/ticket-success.html")
+            String html = readTemplate("templates/ticket-success.html")
                     .replace("{username}", user.getUsername())
                     .replace("{title}", p.getTitle())
                     .replace("{startAt}", p.getPerformanceStartAt().toString())
