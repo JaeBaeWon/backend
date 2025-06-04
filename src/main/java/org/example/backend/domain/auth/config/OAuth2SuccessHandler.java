@@ -5,19 +5,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.backend.domain.auth.entity.RefreshToken;
+import org.example.backend.domain.auth.repository.RefreshTokenRepository;
 import org.example.backend.domain.auth.util.JWTUtil;
 import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -25,13 +26,8 @@ import java.io.IOException;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
-<<<<<<< HEAD
-    private final UserRepository userRepository; // User 정보를 가져오기 위한 repository
     private final RefreshTokenRepository refreshTokenRepository; // RefreshToken을 DB에 저장할 repository
-=======
-    private final UserRepository userRepository;
-    private final RestTemplate restTemplate; // RestTemplate 추가
->>>>>>> ff3bdc95ac60279c2733f3798d1302096ae7ee95
+    private final UserRepository userRepository; // User 정보를 가져오기 위한 repository
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -55,8 +51,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), email, user.getRole().name());
         String refreshToken = jwtUtil.createRefreshToken(email);
 
-<<<<<<< HEAD
-        // ✅ AccessToken 쿠키 생성
+        // ✅ AccessToken 쿠키 생성 (ResponseCookie로 설정)
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
                 .secure(true)
@@ -65,7 +60,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .sameSite("None") // SameSite 설정
                 .build();
 
-        // ✅ RefreshToken 쿠키 생성
+        // ✅ RefreshToken 쿠키 생성 (ResponseCookie로 설정)
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(true)
@@ -73,26 +68,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .maxAge(60 * 60 * 24 * 14) // 14일
                 .sameSite("None") // SameSite 설정
                 .build();
-=======
-        // ✅ AccessToken, RefreshToken 쿠키 전달
-        Cookie accessCookie = new Cookie("accessToken", accessToken);
-        accessCookie.setHttpOnly(true);
-        accessCookie.setSecure(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(60 * 30); // 30분
 
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(60 * 60 * 24 * 14); // 14일
->>>>>>> ff3bdc95ac60279c2733f3798d1302096ae7ee95
-
+        // 쿠키를 HTTP 응답에 추가
         response.addHeader("Set-Cookie", accessCookie.toString());
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
         // ✅ RefreshToken을 DB에 저장 (새로 생성한 refreshToken)
-        RefreshToken refreshTokenEntity = new RefreshToken(user, refreshToken, LocalDateTime.now());
+        RefreshToken refreshTokenEntity = new RefreshToken(user.getEmail(), refreshToken); // 수정된 생성자 사용
         refreshTokenRepository.save(refreshTokenEntity);
 
         // 액세스 토큰을 사용해 사용자 정보 가져오기
