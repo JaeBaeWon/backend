@@ -21,33 +21,11 @@ public class KakaoUserDetails implements OAuth2UserInfo {
 
     @Override
     public String getEmail() {
-        Object accountObj = attributes.get("kakao_account");
-        if (accountObj instanceof Map account) {
-            return account.get("email") != null ? account.get("email").toString() : null;
-        }
-        return null;
+        return (String) ((Map) attributes.get("kakao_account")).get("email");
     }
 
     @Override
     public String getName() {
-        Object accountObj = attributes.get("kakao_account");
-        if (accountObj instanceof Map account) {
-            Object profileObj = account.get("profile");
-            if (profileObj instanceof Map profile) {
-                return profile.get("nickname") != null ? profile.get("nickname").toString() : null;
-            }
-        }
-
-        Object propertiesObj = attributes.get("properties");
-        if (propertiesObj instanceof Map props) {
-            return props.get("nickname") != null ? props.get("nickname").toString() : null;
-        }
-
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
+        return (String) ((Map) attributes.get("properties")).get("nickname");
     }
 }
