@@ -65,9 +65,9 @@ public class KafkaConsumerService {
 
             // Reservation 저장
             Reservation reservation = Reservation.builder()
-                    .userId(user)
-                    .performanceId(performance)
-                    .seatId(seat)
+                    .user(user)
+                    .performance(performance)
+                    .seat(seat)
                     .ticketId(dto.getTicketId())
                     .reservationStatus(ReservationStatus.RESERVED)
                     .build();
