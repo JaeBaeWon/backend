@@ -50,10 +50,9 @@ public class SecurityConfig {
                                 clientRegistrationRepository, "/oauth2/authorization");
 
                 http.oauth2Login(auth -> auth
-                                .loginPage("/auth/login")
                                 .authorizationEndpoint(config -> config.authorizationRequestResolver(customResolver))
                                 .successHandler(oAuth2SuccessHandler)
-                                .failureUrl("/auth/login?error=true")
+                                .failureUrl("/") // ✅ 로그인 실패 시 SPA 진입점으로 이동
                                 .permitAll());
 
                 http.logout(auth -> auth

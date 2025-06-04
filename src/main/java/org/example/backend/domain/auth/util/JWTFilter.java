@@ -2,6 +2,7 @@ package org.example.backend.domain.auth.util;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +19,14 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
 
-    // ✅ 인증 제외 URL 목록
     private static final List<String> EXCLUDE_URLS = List.of(
-            "/auth/login", "/auth/join", "/auth/refresh",
-            "/auth/find-id", "/auth/reset-password", "/auth/check");
+            "/", "/auth/login", "/auth/join", "/auth/refresh",
+            "/auth/find-id", "/auth/reset-password", "/auth/check",
+            "/shows", "/mypage", "/onboarding", "/show", "/error", "/favicon");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -41,13 +41,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String token = null;
 
-        // 1. Authorization 헤더 우선
         String authorization = request.getHeader("Authorization");
         if (authorization != null && authorization.startsWith("Bearer ")) {
             token = authorization.substring(7);
         }
 
-        // 2. 헤더 없을 경우 accessToken 쿠키에서 가져오기
         if (token == null && request.getCookies() != null) {
             for (var cookie : request.getCookies()) {
                 if (cookie.getName().equals("accessToken")) {
@@ -92,5 +90,4 @@ public class JWTFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
 }
