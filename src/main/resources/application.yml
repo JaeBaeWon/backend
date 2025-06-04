@@ -1,6 +1,4 @@
 spring:
-  # config:
-  # import: aws-secretsmanager:secret/backend
   cloud:
     aws:
       region:
@@ -36,6 +34,9 @@ spring:
               - email
               - profile
             redirect-uri: "https://app.podopicker.store/login/oauth2/code/google"
+            client-name: Google
+            authorization-grant-type: authorization_code
+            client-authentication-method: basic
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
@@ -52,9 +53,10 @@ spring:
             scope:
               - name
               - email
-            client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: "https://app.podopicker.store/login/oauth2/code/naver" #1
+            redirect-uri: "https://app.podopicker.store/login/oauth2/code/naver"
+            client-name: Naver
+            client-authentication-method: client_secret_post
 
         provider:
           kakao:
@@ -67,6 +69,11 @@ spring:
             token-uri: https://nid.naver.com/oauth2.0/token
             user-info-uri: https://openapi.naver.com/v1/nid/me
             user-name-attribute: response
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
   thymeleaf:
     enabled: false
@@ -87,7 +94,6 @@ spring:
       port: 6379
 
   kafka:
-    # kafka 쓸때만 true로
     enabled: false
     bootstrap-servers: ${KAFKA_SERVER}
     consumer:
