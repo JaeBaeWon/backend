@@ -102,13 +102,13 @@ public class SeatService {
 
         List<Seat> seats = seatRepository.findAllByPerformance(perform);
 
-        // 1. Redis 선점 상태 조회
+        // Redis 선점 상태 조회 (임시 HOLD)
         Set<String> lockedSeatKeys = redisTemplate.keys("seat:*");
         Set<Long> lockedSeatIds = lockedSeatKeys.stream()
                 .map(this::extractSeatIdFromKey)
                 .collect(Collectors.toSet());
 
-        // 2. Redis 예약 처리 대기 상태 조회
+        // Redis 예약 처리 대기 상태 조회 (결제 완료 후 PENDING)
         Set<String> pendingKeys = redisTemplate.keys("reservation:pending:*");
         Set<Long> pendingSeatIds = pendingKeys.stream()
                 .map(this::extractSeatIdFromReservationKey)
@@ -118,17 +118,27 @@ public class SeatService {
                 .map(seat -> {
                     Long seatId = seat.getSeatId();
 
-                    if (pendingSeatIds.contains(seatId)) {
-                        seat.setSeatStatus(SeatStatus.PENDING); // 결제 완료, 배치 대기
-                    }
-                    else if (lockedSeatIds.contains(seatId)) {
-                        seat.setSeatStatus(SeatStatus.HOLD); // 좌석만 선점 (결제 전)
+                    // ✅ 1. DB에서 이미 BOOKED인 경우는 그대로 유지
+                    if (seat.getSeatStatus() == SeatStatus.BOOKED) {
+                        return SeatStatusDto.of(seat);
                     }
 
+                    // ✅ 2. Redis에 결제 대기중이라면 PENDING
+                    if (pendingSeatIds.contains(seatId)) {
+                        seat.setSeatStatus(SeatStatus.PENDING);
+                    }
+
+                    // ✅ 3. Redis에 선점 상태라면 HOLD
+                    else if (lockedSeatIds.contains(seatId)) {
+                        seat.setSeatStatus(SeatStatus.HOLD);
+                    }
+
+                    // 나머지는 AVAILABLE 또는 기존 상태 유지
                     return SeatStatusDto.of(seat);
                 })
                 .toList();
     }
+
 
 
     private Long extractSeatIdFromKey(String key) {
