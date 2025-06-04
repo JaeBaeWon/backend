@@ -1,6 +1,7 @@
 package org.example.backend.domain.reservation.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.domain.auth.config.CustomSecurityUserDetails;
 import org.example.backend.domain.auth.service.MemberService;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.reservation.dto.ReservationDetailsDto;
@@ -31,13 +32,33 @@ public class ReservationController {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
 
-    @PostMapping("/create")
+    /**
+     * 예약 상태 조회 (PENDING, CONFIRMED, NONE)
+     */
+    @GetMapping("/status/{seatId}")
+    public ResponseEntity<?> getReservationStatus(@PathVariable Long seatId, Authentication auth) {
+        if (auth == null || !(auth.getPrincipal() instanceof CustomSecurityUserDetails userDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Long userId = userDetails.getUserId();
+
+        try {
+            String status = reservationService.getReservationStatus(userId, seatId);
+            return ResponseEntity.ok(Map.of("status", status));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "❌ 예약 상태 조회 실패: " + e.getMessage()));
+        }
+    }
+
+    /*@PostMapping("/create")
     public ResponseEntity<Reservation> createReservation(@RequestBody ReservationDto request) {
         Reservation reservation = reservationService.createReservation(request);
         return ResponseEntity.ok(reservation);
-    }
+    }*/
 
-    @GetMapping("/check/user/{userId}")
+    /*@GetMapping("/check/user/{userId}")
     public ResponseEntity<UserDto> getUserInfo(@PathVariable Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자 없음"));
@@ -50,15 +71,15 @@ public class ReservationController {
         );
 
         return ResponseEntity.ok(dto);
-    }
+    }*/
 
-    @Transactional(readOnly = true)
+    /*@Transactional(readOnly = true)
     @GetMapping("/check/reservation/{reservationId}")
     public ResponseEntity<ReservationResponse> getCheckoutInfo(@PathVariable Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
-        User user = reservation.getUserId();
-        Performance performance = reservation.getPerformanceId();
+        User user = reservation.getUser();
+        Performance performance = reservation.getPerformance();
 
         System.out.println("user: " + user.getUsername() + ", price: " + performance.getPrice());
 
@@ -71,7 +92,7 @@ public class ReservationController {
                 .build();
 
         return ResponseEntity.ok(response);
-    }
+    }*/
 
     @GetMapping("/by-ticket/{ticketId}")
     public ResponseEntity<?> getReservationIdByTicket(@PathVariable String ticketId) {

@@ -13,15 +13,20 @@ import org.example.backend.domain.payment.repository.PaymentRepository;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.reservation.dto.ReservationKafkaDto;
+import org.example.backend.domain.reservation.dto.ReservationMessageDto;
 import org.example.backend.domain.reservation.dto.ReservationResponse;
 import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
 import org.example.backend.domain.reservation.repository.ReservationRepository;
+import org.example.backend.domain.reservation.service.ReservationService;
 import org.example.backend.domain.seat.entity.Seat;
 import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
+import org.redisson.api.RBucket;
+import org.redisson.api.RQueue;
+import org.redisson.api.RedissonClient;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +45,50 @@ public class PaymentService {
     private final PerformanceRepository performanceRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final RedissonClient redissonClient;
+    private final ReservationService reservationService;
+
+    @Transactional
+    public ReservationResponse verifyAndQueueReservation(PaymentVerificationRequest request) throws Exception {
+        var paymentInfo = verifyPaymentWithIamport(request.getImpUid());
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+        Performance performance = performanceRepository.findById(request.getPerformanceId())
+                .orElseThrow(() -> new IllegalArgumentException("공연 없음"));
+        Seat seat = validateSeatAvailability(request.getSeatId(), performance, paymentInfo);
+
+        // ✅ 중복 예약 방지
+        if (reservationService.isDuplicateReservation(user.getUserId(), seat.getSeatId())) {
+            throw new IllegalStateException("이미 예약 처리 중입니다.");
+        }
+
+        // ✅ 예약 상태 PENDING 저장
+        reservationService.setPendingStatus(user.getUserId(), seat.getSeatId());
+
+        String ticketId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        ReservationMessageDto dto = ReservationMessageDto.builder()
+                .userId(user.getUserId())
+                .performanceId(performance.getPerformanceId())
+                .seatId(seat.getSeatId())
+                .ticketId(ticketId)
+                .impUid(request.getImpUid())
+                .merchantUid(request.getMerchantUid())
+                .paymentAmount(paymentInfo.getAmount().intValue())
+                .payMethod(paymentInfo.getPayMethod())
+                .build();
+
+        // Redis Queue에 전송
+        redissonClient.getQueue("reservation:queue").add(objectMapper.writeValueAsString(dto));
+
+        return ReservationResponse.builder()
+                .userId(user.getUserId())
+                .performanceId(performance.getPerformanceId())
+                .seatId(seat.getSeatId())
+                .ticketId(ticketId)
+                .build();
+    }
 
 
     @Transactional
@@ -103,9 +152,9 @@ public class PaymentService {
 
     private Reservation createReservationEntity(User user, Performance performance, Seat seat) {
         return Reservation.builder()
-                .userId(user)
-                .performanceId(performance)
-                .seatId(seat)
+                .user(user)
+                .performance(performance)
+                .seat(seat)
                 .reservationStatus(ReservationStatus.RESERVED)
                 .ticketId(UUID.randomUUID().toString().replace("-", "").substring(0, 12))
                 .build();
@@ -138,8 +187,8 @@ public class PaymentService {
         Payment payment = paymentRepository.findByReservation(reservation)
                 .orElseThrow(() -> new RuntimeException("해당 예약의 결제 내역 없음"));
 
-        Performance performance = reservation.getPerformanceId();
-        Seat seat = reservation.getSeatId();
+        Performance performance = reservation.getPerformance();
+        Seat seat = reservation.getSeat();
 
         return PaymentCompleteResponse.builder()
                 .ticketNumber(reservation.getTicketId())
