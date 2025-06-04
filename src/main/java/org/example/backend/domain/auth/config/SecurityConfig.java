@@ -39,12 +39,13 @@ public class SecurityConfig {
                                                 "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
                                                 "/oauth2/**", "/health", "/error", "/performance/**",
                                                 "/auth/check-duplicate", "/seat/**", "/actuator/**",
-                                                "/auth/onboarding", "/index.html", "/static/**")
+                                                "/auth/onboarding", "/index.html", "/static/**", "/mail/send/**")
                                 .permitAll()
                                 .anyRequest().authenticated());
 
                 // Spring Form Login 제거 (우리는 SPA 기반 처리)
-                http.formLogin().disable();
+                http.formLogin(form -> form.disable());
+
 
                 OAuth2AuthorizationRequestResolver customResolver = new CustomAuthorizationRequestResolver(
                                 clientRegistrationRepository, "/oauth2/authorization");
