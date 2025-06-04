@@ -7,19 +7,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class FrontendRoutingController {
 
     @GetMapping({
-            "/",                      // 루트 페이지
+            "/", // 루트 페이지
             "/login",
             "/signup",
             "/auth/**",
             "/mypage/**",
             "/reservation/**",
             "/reset-password",
-            "/resetpassword",        // 혹시 대소문자나 다른 경로 오타 방지
+            "/resetpassword", // 혹시 대소문자나 다른 경로 오타 방지
             "/find-id",
             "/findemail",
             "/onboarding",
-            "/shows",                // 리스트 페이지
-            "/show/**",              // 상세 페이지 포함
+            "/shows", // 리스트 페이지
+            "/show/**", // 상세 페이지 포함
             "/openalertcomplete",
             "/show/ranking"
     })

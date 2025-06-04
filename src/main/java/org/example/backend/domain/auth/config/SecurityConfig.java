@@ -16,8 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -34,7 +32,6 @@ public class SecurityConfig {
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
                 http.cors(cors -> cors.configurationSource(corsConfigurationSource));
-                http.cors(withDefaults());
 
                 http.authorizeHttpRequests(auth -> auth
                                 .requestMatchers(
@@ -42,11 +39,12 @@ public class SecurityConfig {
                                                 "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
                                                 "/oauth2/**", "/health", "/error", "/performance/**",
                                                 "/auth/check-duplicate", "/seat/**", "/actuator/**",
-                                                "/auth/onboarding" // ✅ 온보딩 경로 인증 없이 허용
-                                ).permitAll()
+                                                "/auth/onboarding", "/index.html", "/static/**")
+                                .permitAll()
                                 .anyRequest().authenticated());
 
-                http.formLogin(auth -> auth.disable());
+                // Spring Form Login 제거 (우리는 SPA 기반 처리)
+                http.formLogin().disable();
 
                 OAuth2AuthorizationRequestResolver customResolver = new CustomAuthorizationRequestResolver(
                                 clientRegistrationRepository, "/oauth2/authorization");

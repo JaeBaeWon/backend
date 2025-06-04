@@ -26,8 +26,7 @@ public class JWTFilter extends OncePerRequestFilter {
     // ✅ 인증 제외 URL 목록
     private static final List<String> EXCLUDE_URLS = List.of(
             "/auth/login", "/auth/join", "/auth/refresh",
-            "/auth/find-id", "/auth/reset-password", "/auth/check"
-    );
+            "/auth/find-id", "/auth/reset-password", "/auth/check");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -37,17 +36,31 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
+        String token = null;
+
+        // 1. Authorization 헤더 우선
         String authorization = request.getHeader("Authorization");
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            token = authorization.substring(7);
+        }
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        // 2. 헤더 없을 경우 accessToken 쿠키에서 가져오기
+        if (token == null && request.getCookies() != null) {
+            for (var cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authorization.substring(7); // "Bearer " 이후 토큰
 
         if (jwtUtil.isExpired(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -71,12 +84,13 @@ public class JWTFilter extends OncePerRequestFilter {
             user.setRole(UserRole.valueOf(roleStr));
 
             CustomSecurityUserDetails userDetails = new CustomSecurityUserDetails(user);
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    userDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);
     }
+
 }
