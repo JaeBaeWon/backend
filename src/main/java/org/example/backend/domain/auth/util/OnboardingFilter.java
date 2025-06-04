@@ -24,6 +24,19 @@ public class OnboardingFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
 
+    private static final String[] EXCLUDED_PATHS = {
+            "/auth/onboarding",
+            "/auth/login",
+            "/api/user",
+            "/api/member",
+            "/email",
+            "/css",
+            "/js",
+            "/images",
+            "/favicon",
+            "/error"
+    };
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,
@@ -32,18 +45,12 @@ public class OnboardingFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         log.debug("[OnboardingFilter] 요청 URI: {}", uri);
 
-        // ✅ 온보딩, 로그인, 정적 자원은 필터 제외
-        if (uri.startsWith("/onboarding")
-                || uri.startsWith("/auth/onboarding")
-                || uri.startsWith("/auth/login")
-                || uri.startsWith("/css")
-                || uri.startsWith("/js")
-                || uri.startsWith("/images")
-                || uri.startsWith("/favicon")
-                || uri.startsWith("/error")) {
-            log.debug("[OnboardingFilter] 필터 제외 대상 URI → {}", uri);
-            filterChain.doFilter(request, response);
-            return;
+        for (String path : EXCLUDED_PATHS) {
+            if (uri.startsWith(path)) {
+                log.debug("[OnboardingFilter] 필터 제외 대상 URI → {}", uri);
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -56,7 +63,8 @@ public class OnboardingFilter extends OncePerRequestFilter {
             if (principal instanceof UserDetails userDetails) {
                 email = userDetails.getUsername();
             } else if (principal instanceof OAuth2User oAuth2User) {
-                email = oAuth2User.getAttribute("email");
+                Object attr = oAuth2User.getAttribute("email");
+                email = attr != null ? attr.toString() : null;
             }
 
             log.debug("[OnboardingFilter] 인증된 사용자 이메일: {}", email);
@@ -67,12 +75,12 @@ public class OnboardingFilter extends OncePerRequestFilter {
                     log.debug("[OnboardingFilter] 사용자 Onboarding 상태: {}", user.isOnboardingCompleted());
 
                     if (!user.isOnboardingCompleted()) {
-                        log.warn("[OnboardingFilter] {} 온보딩 미완료 → /auth/onboarding 으로 리디렉션", email);
-                        response.sendRedirect("/auth/onboarding");
+                        log.info("[OnboardingFilter] {} 온보딩 미완료 → /auth/onboarding 으로 리디렉션", email);
+                        response.sendRedirect(request.getContextPath() + "/auth/onboarding");
                         return;
                     }
                 } else {
-                    log.warn("[OnboardingFilter] 이메일로 사용자 조회 실패: {}", email);
+                    log.info("[OnboardingFilter] 이메일로 사용자 조회 실패: {}", email);
                 }
             }
         } else {
