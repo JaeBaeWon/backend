@@ -6,7 +6,9 @@ import static org.example.backend.global.exception.ExceptionContent.NOT_FOUND_SE
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.backend.domain.performance.entity.Performance;
@@ -77,7 +79,7 @@ public class SeatService {
     /**
      * 공연의 전체 좌석 상태 조회
      */
-    public List<SeatStatusDto> getAllSeatsStatus(Long performId) {
+    /*public List<SeatStatusDto> getAllSeatsStatus(Long performId) {
         Performance perform = performanceRepository.findById(performId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_PERFORMANCE));
 
@@ -92,5 +94,59 @@ public class SeatService {
                     return SeatStatusDto.of(seat);
                 })
                 .toList();
+    }*/
+
+    public List<SeatStatusDto> getAllSeatsStatus(Long performId) {
+        Performance perform = performanceRepository.findById(performId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND_PERFORMANCE));
+
+        List<Seat> seats = seatRepository.findAllByPerformance(perform);
+
+        // 1. Redis 선점 상태 조회
+        Set<String> lockedSeatKeys = redisTemplate.keys("seat:*");
+        Set<Long> lockedSeatIds = lockedSeatKeys.stream()
+                .map(this::extractSeatIdFromKey)
+                .collect(Collectors.toSet());
+
+        // 2. Redis 예약 처리 대기 상태 조회
+        Set<String> pendingKeys = redisTemplate.keys("reservation:pending:*");
+        Set<Long> pendingSeatIds = pendingKeys.stream()
+                .map(this::extractSeatIdFromReservationKey)
+                .collect(Collectors.toSet());
+
+        return seats.stream()
+                .map(seat -> {
+                    Long seatId = seat.getSeatId();
+
+                    if (pendingSeatIds.contains(seatId)) {
+                        seat.setSeatStatus(SeatStatus.PENDING); // 결제 완료, 배치 대기
+                    }
+                    else if (lockedSeatIds.contains(seatId)) {
+                        seat.setSeatStatus(SeatStatus.HOLD); // 좌석만 선점 (결제 전)
+                    }
+
+                    return SeatStatusDto.of(seat);
+                })
+                .toList();
     }
+
+
+    private Long extractSeatIdFromKey(String key) {
+        // "seat:{seatId}"
+        try {
+            return Long.parseLong(key.split(":")[1]);
+        } catch (Exception e) {
+            throw new IllegalStateException("Redis 키 형식 오류: " + key);
+        }
+    }
+
+    private Long extractSeatIdFromReservationKey(String key) {
+        // "reservation:pending:{userId}:{seatId}"
+        try {
+            return Long.parseLong(key.split(":")[3]);
+        } catch (Exception e) {
+            throw new IllegalStateException("Redis 예약 키 형식 오류: " + key);
+        }
+    }
+
 }

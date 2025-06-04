@@ -29,7 +29,6 @@ public class ReservationController {
 
     private final MemberService memberService;
     private final ReservationService reservationService;
-    private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
 
     /**
@@ -93,6 +92,13 @@ public class ReservationController {
 
         return ResponseEntity.ok(response);
     }*/
+
+    // Controller
+    @GetMapping("/by-ticket-redis/{ticketId}")
+    public ResponseEntity<?> getReservationIdByTicketAtRedis(@PathVariable String ticketId) {
+        return ResponseEntity.ok().body(reservationService.getReservationStatusByTicketId(ticketId));
+    }
+
 
     @GetMapping("/by-ticket/{ticketId}")
     public ResponseEntity<?> getReservationIdByTicket(@PathVariable String ticketId) {
