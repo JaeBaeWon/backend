@@ -64,18 +64,18 @@ public class NotificationService {
                 continue;
             }
 
-            LocalDateTime performStartAt = notification.getPerformance().getPerformStartAt();
-            if (performStartAt == null) {
+            LocalDateTime performOpenAt = notification.getPerformance().getPerformanceOpenAt();
+            if (performOpenAt == null) {
                 continue;
             }
 
-            if (isDaysBefore(performStartAt, now, 7) || isDaysBefore(performStartAt, now, 1)) {
+            if (isDaysBefore(performOpenAt, now, 7) || isDaysBefore(performOpenAt, now, 1)) {
                 // 메일 발송
                 emailService.sendOpenAlarmMail(
                         notification.getUser().getEmail(),
                         notification.getUser().getUsername(),
                         notification.getPerformance().getTitle(),
-                        performStartAt,
+                        performOpenAt,
                         "https://podopicker.store/"
                 );
             }
@@ -83,9 +83,9 @@ public class NotificationService {
     }
 
     // 날짜 비교하는 메소드
-    private boolean isDaysBefore(LocalDateTime performStartAt, LocalDateTime now, int days) {
+    private boolean isDaysBefore(LocalDateTime performOpenAt, LocalDateTime now, int days) {
         LocalDateTime targetDate = now.plusDays(days);
 
-        return performStartAt.toLocalDate().isEqual(targetDate.toLocalDate());
+        return performOpenAt.toLocalDate().isEqual(targetDate.toLocalDate());
     }
 }
