@@ -22,7 +22,7 @@ public class EmailController {
     private final EmailService emailService;
     private final JavaMailSender mailSender;
 
-    @PostMapping("/mail/test")
+    @PostMapping("/send/test")
     public String testMail() throws Exception {
         MimeMessage msg = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
