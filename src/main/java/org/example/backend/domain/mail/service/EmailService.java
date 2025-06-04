@@ -1,7 +1,19 @@
 package org.example.backend.domain.mail.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.mail.dto.EmailDto;
 import org.example.backend.domain.notification.entity.Notification;
+import org.example.backend.domain.payment.entity.Payment;
+import org.example.backend.domain.payment.repository.PaymentRepository;
+import org.example.backend.domain.performance.entity.Performance;
+import org.example.backend.domain.reservation.entity.Reservation;
+import org.example.backend.domain.reservation.repository.ReservationRepository;
+import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.repository.SeatRepository;
+import org.example.backend.domain.user.entity.User;
+import org.example.backend.domain.user.repository.UserRepository;
+import org.example.backend.global.exception.CustomException;
+import org.example.backend.global.exception.ExceptionContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +29,7 @@ import jakarta.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
     @Value("${spring.mail.username}")
@@ -28,34 +41,45 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    private final ReservationRepository reservationRepository;
+    private final PaymentRepository paymentRepository;
+    private final SeatRepository seatRepository;
+
     //티켓 예매 메일
-    public void sendTicketMail(EmailDto dto) throws MessagingException {
+    public void sendTicketMail(Long reservationId) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        System.out.println("email: " + dto.getEmail() +
-                "\nusername: " + dto.getUsername() +
-                "\ntitle: " + dto.getTitle() +
-                "\npaymentDate: " + dto.getPaymentDate() +
-                "\nseatnum: " + dto.getSeatNum() +
-                "\nperform start: " + dto.getPerformStartAt() +
-                "\nperfom end: " + dto.getPerformEndAt() +
-                "\nseat section" + dto.getSeatSection() +
-                "\npayment amount: " + dto.getPaymentAmount() +
-                "\npayment date: " + dto.getPaymentDate());
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(()-> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
+        User user = reservation.getUser();
+        Performance performance = reservation.getPerformance();
+        Payment payment = paymentRepository.findByReservation(reservation)
+                .orElseThrow(()-> new CustomException(ExceptionContent.NOT_FOUND_PAYMENT));
+        Seat seat = seatRepository.findByPerformance(performance);
+
+        System.out.println("email: " + user.getEmail() +
+                "\nusername: " + user.getUsername() +
+                "\ntitle: " + performance.getTitle() +
+                "\npaymentDate: " + payment.getPaymentDate() +
+                "\nseatnum: " + seat.getSeatNum() +
+                "\nperform start: " + performance.getPerformanceStartAt() +
+                "\nperfom end: " + performance.getPerformanceEndAt() +
+                "\nseat section" + seat.getSeatSection() +
+                "\npayment amount: " + payment.getPaymentAmount());
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         String content = "<html><body style='font-family: Arial, sans-serif; padding: 20px;'>"
                 + "<div style='max-width: 600px; margin: auto; border: 1px solid #ccc; border-radius: 10px; padding: 20px; background-color: #f9f9f9;'>"
-                + "<h2 style='color: #2c3e50;'>🎟️ " + dto.getUsername() + "님, 티켓 예매가 완료되었습니다!</h2>"
+                + "<h2 style='color: #2c3e50;'>🎟️ " + user.getUsername() + "님, 티켓 예매가 완료되었습니다!</h2>"
                 + "<hr>"
-                + "<p><strong>공연명:</strong> " + dto.getTitle() + "</p>"
-                + "<p><strong>공연시간:</strong> " + dto.getPerformStartAt() + " ~ " + dto.getPerformEndAt() + "</p>"
-                + "<p><strong>공연장소:</strong> " + dto.getLocation() + "</p>"
-                + "<p><strong>좌석:</strong> " + dto.getSeatSection() + " 구역, " + dto.getSeatNum() + "번</p>"
-                + "<p><strong>결제일시:</strong> " + sdf.format(dto.getPaymentDate()) + "</p>"
-                + "<p><strong>결제금액:</strong> " + String.format("%,d", dto.getPaymentAmount()) + "원</p>"
+                + "<p><strong>공연명:</strong> " + performance.getTitle() + "</p>"
+                + "<p><strong>공연시간:</strong> " + performance.getPerformanceStartAt() + " ~ " + performance.getPerformanceEndAt() + "</p>"
+                + "<p><strong>공연장소:</strong> " + performance.getLocation() + "</p>"
+                + "<p><strong>좌석:</strong> " + seat.getSeatSection() + " 구역, " + seat.getSeatNum() + "번</p>"
+                + "<p><strong>결제일시:</strong> " + sdf.format(payment.getPaymentDate()) + "</p>"
+                + "<p><strong>결제금액:</strong> " + String.format("%,d", payment.getPaymentAmount()) + "원</p>"
                 + "<br><p style='font-size:14px; color:#555;'>즐거운 공연 관람 되세요! 🎶</p>"
                 + "</div>"
                 + "</body></html>";
@@ -66,13 +90,13 @@ public class EmailService {
             throw new RuntimeException(e);
         }
 
-        helper.setTo(dto.getEmail());
-        helper.setSubject("[티켓 예매 완료] " + dto.getTitle() + " 공연");
+        helper.setTo(user.getEmail());
+        helper.setSubject("[티켓 예매 완료] " + performance.getTitle() + " 공연");
         helper.setText(content, true);
 
         try {
             mailSender.send(message);
-            System.out.println("✅ 메일 발송 성공: " + dto.getEmail());
+            System.out.println("✅ 메일 발송 성공: " + user.getEmail());
         } catch (Exception e) {
             System.err.println("❌ 메일 발송 실패: " + e.getMessage());
         }
