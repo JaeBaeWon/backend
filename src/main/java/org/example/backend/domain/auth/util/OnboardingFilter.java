@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.backend.domain.user.entity.User;
+import org.example.backend.domain.user.entity.UserRole;
 import org.example.backend.domain.user.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,8 +40,8 @@ public class OnboardingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
         log.debug("[OnboardingFilter] 요청 URI: {}", uri);
@@ -71,11 +72,14 @@ public class OnboardingFilter extends OncePerRequestFilter {
 
             if (email != null) {
                 User user = userRepository.findByEmail(email).orElse(null);
-                if (user != null) {
-                    log.debug("[OnboardingFilter] 사용자 Onboarding 상태: {}", user.isOnboardingCompleted());
 
-                    if (!user.isOnboardingCompleted()) {
-                        log.info("[OnboardingFilter] {} 온보딩 미완료 → /auth/onboarding 으로 리디렉션", email);
+                if (user != null) {
+                    log.debug("[OnboardingFilter] 사용자 ROLE: {}, Onboarding 상태: {}",
+                            user.getRole(), user.isOnboardingCompleted());
+
+                    // ✅ CONSUMER일 때만 온보딩 검사
+                    if (user.getRole() == UserRole.CONSUMER && !user.isOnboardingCompleted()) {
+                        log.info("[OnboardingFilter] {} (CONSUMER) 온보딩 미완료 → /auth/onboarding 으로 리디렉션", email);
                         response.sendRedirect(request.getContextPath() + "/auth/onboarding");
                         return;
                     }
