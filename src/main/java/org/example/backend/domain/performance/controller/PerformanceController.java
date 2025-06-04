@@ -8,6 +8,7 @@ import org.example.backend.domain.performance.dto.response.PerformRes;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.service.PerformanceService;
 import org.example.backend.domain.user.entity.User;
+import org.example.backend.global.exception.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -93,11 +94,17 @@ public class PerformanceController {
 
     // 관리자별 공연 목록 조회
     @GetMapping("/manage/my")
-    public ResponseEntity<List<Performance>> getMyPerformances(Authentication auth) {
-        String email = auth.getName();
-        User manager = memberService.getUserByEmail(email);
-        List<Performance> performances = performanceService.getMyPerformances(manager);
-        return ResponseEntity.ok(performances);
+    public ResponseEntity<?> getMyPerformances(Authentication auth) {
+        try {
+            String email = auth.getName();
+            User manager = memberService.getUserByEmail(email); // 여기서 에러 터짐
+            List<Performance> performances = performanceService.getMyPerformances(manager);
+            return ResponseEntity.ok(performances);
+        } catch (CustomException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
+        }
     }
 
     // 공연 수정
