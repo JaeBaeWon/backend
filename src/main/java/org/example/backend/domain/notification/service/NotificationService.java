@@ -2,6 +2,7 @@ package org.example.backend.domain.notification.service;
 
 import jakarta.mail.MessagingException;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.mail.service.EmailService;
 import org.example.backend.domain.notification.entity.Notification;
 import org.example.backend.domain.notification.repository.NotificationRepository;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Getter
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
     @Value("${spring.mail.username}")
@@ -29,18 +31,6 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final PerformanceRepository performanceRepository;
     private final EmailService emailService;
-
-    public NotificationService(
-            NotificationRepository notificationRepository,
-            UserRepository userRepository,
-            PerformanceRepository performanceRepository,
-            EmailService emailService
-    ) {
-        this.notificationRepository = notificationRepository;
-        this.userRepository = userRepository;
-        this.performanceRepository = performanceRepository;
-        this.emailService = emailService;
-    }
 
     public void subscribeNotification(Long userId, Long performanceId) {
         User user = userRepository.findById(userId)
@@ -71,12 +61,7 @@ public class NotificationService {
 
             if (isDaysBefore(performOpenAt, now, 7) || isDaysBefore(performOpenAt, now, 1)) {
                 // 메일 발송
-                emailService.sendOpenAlarmMail(
-                        notification.getUser().getEmail(),
-                        notification.getUser().getUsername(),
-                        notification.getPerformance().getTitle(),
-                        performOpenAt,
-                        "https://podopicker.store/"
+                emailService.sendOpenAlarmMail(notification, performOpenAt, "https://podopicker.store/"
                 );
             }
         }
