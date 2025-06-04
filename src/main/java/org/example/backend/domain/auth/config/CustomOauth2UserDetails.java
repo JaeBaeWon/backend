@@ -12,10 +12,15 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
 
     private final User user;
     private final Map<String, Object> attributes;
+    private String provider;
 
     public CustomOauth2UserDetails(User user, Map<String, Object> attributes) {
         this.user = user;
         this.attributes = attributes;
+    }
+
+    public String getProvider() {
+        return provider;
     }
 
     @Override
