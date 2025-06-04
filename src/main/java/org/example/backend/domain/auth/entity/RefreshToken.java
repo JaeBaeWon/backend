@@ -2,8 +2,10 @@ package org.example.backend.domain.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.example.backend.domain.user.entity.User;
 import java.time.LocalDateTime;
+
+import org.example.backend.domain.user.entity.User;
 
 @Entity
 @Getter
