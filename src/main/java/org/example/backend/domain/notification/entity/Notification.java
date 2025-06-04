@@ -1,10 +1,7 @@
 package org.example.backend.domain.notification.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.user.entity.User;
 
@@ -12,6 +9,7 @@ import org.example.backend.domain.user.entity.User;
 @NoArgsConstructor
 @Builder
 @Getter
+@Setter
 @Entity
 public class Notification {
 
