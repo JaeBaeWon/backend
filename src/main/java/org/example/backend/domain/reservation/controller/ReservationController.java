@@ -111,4 +111,12 @@ public class ReservationController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/status/{ticketId}")
+    public ResponseEntity<?> checkReservationStatus(@PathVariable String ticketId) {
+        return reservationRepository.findByTicketId(ticketId)
+                .map(reservation -> ResponseEntity.ok(Map.of("exists", true, "reservationId", reservation.getReservationId())))
+                .orElse(ResponseEntity.ok(Map.of("exists", false)));
+    }
+
+
 }
