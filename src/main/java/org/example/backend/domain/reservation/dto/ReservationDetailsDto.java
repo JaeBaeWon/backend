@@ -42,10 +42,10 @@ public class ReservationDetailsDto {
     private Long paymentId; // ✅ 환불 요청 시 필요
 
     public static ReservationDetailsDto of(Reservation reservation, Payment payment) {
-        Performance performance = reservation.getPerformanceId();
+        Performance performance = reservation.getPerformance();
 
         return ReservationDetailsDto.builder()
-                .userName(reservation.getUserId().getUsername())
+                .userName(reservation.getUser().getUsername())
                 .ticketId(reservation.getTicketId())
                 .performanceStartAt(performance.getPerformanceStartAt())
                 .location(performance.getLocation())
@@ -53,8 +53,8 @@ public class ReservationDetailsDto {
                 .performanceStatus(performance.getPerformanceStatus())
                 .payType(payment.getPayType())
                 .paymentStatus(payment.getPaymentStatus())
-                .seatId(reservation.getSeatId().getSeatId())
-                .seatInfo(reservation.getSeatId().getSeatSection() + "구역 " + reservation.getSeatId().getSeatNum() + "번")
+                .seatId(reservation.getSeat().getSeatId())
+                .seatInfo(reservation.getSeat().getSeatSection() + "구역 " + reservation.getSeat().getSeatNum() + "번")
                 .paymentAmount(payment.getPaymentAmount())
                 .refundStatus(reservation.getReservationStatus())
                 .refundAmount(payment.getRefundAmount())
