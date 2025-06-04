@@ -1,7 +1,5 @@
 package org.example.backend.domain.auth.config;
 
-import org.example.backend.domain.auth.config.CustomOauth2UserDetails;
-
 import org.example.backend.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,7 +25,7 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getName() {
-        return user.getProvider() + "_" + user.getProviderId(); // OAuth2 식별자
+        return user.getProvider() + "_" + user.getProviderId(); // 예: kakao_123456
     }
 
     @Override
@@ -42,7 +40,7 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getEmail(); // DB 저장 기준 (예: kakao_123456)
     }
 
     @Override
