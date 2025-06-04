@@ -1,5 +1,10 @@
 package org.example.backend.domain.mail.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.mail.dto.EmailDto;
 import org.example.backend.domain.notification.entity.Notification;
@@ -16,6 +21,7 @@ import org.example.backend.global.exception.CustomException;
 import org.example.backend.global.exception.ExceptionContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -33,72 +39,59 @@ import java.io.UnsupportedEncodingException;
 public class EmailService {
 
     @Value("${spring.mail.username}")
-    private String MAIL_ADDRESS;
+    private String senderEmail;
 
     @Value("${spring.mail.properties.mail.smtp.name}")
-    private String MAIL_NAME;
+    private String senderName;
 
-    @Autowired
-    private JavaMailSender mailSender;
-
+    private final JavaMailSender mailSender;
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
     private final SeatRepository seatRepository;
 
-    //티켓 예매 메일
-    public void sendTicketMail(Long reservationId) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(()-> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
-        User user = reservation.getUser();
-        Performance performance = reservation.getPerformance();
-        Payment payment = paymentRepository.findByReservation(reservation)
-                .orElseThrow(()-> new CustomException(ExceptionContent.NOT_FOUND_PAYMENT));
-        Seat seat = seatRepository.findByPerformance(performance);
-
-        System.out.println("email: " + user.getEmail() +
-                "\nusername: " + user.getUsername() +
-                "\ntitle: " + performance.getTitle() +
-                "\npaymentDate: " + payment.getPaymentDate() +
-                "\nseatnum: " + seat.getSeatNum() +
-                "\nperform start: " + performance.getPerformanceStartAt() +
-                "\nperfom end: " + performance.getPerformanceEndAt() +
-                "\nseat section" + seat.getSeatSection() +
-                "\npayment amount: " + payment.getPaymentAmount());
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-        String content = "<html><body style='font-family: Arial, sans-serif; padding: 20px;'>"
-                + "<div style='max-width: 600px; margin: auto; border: 1px solid #ccc; border-radius: 10px; padding: 20px; background-color: #f9f9f9;'>"
-                + "<h2 style='color: #2c3e50;'>🎟️ " + user.getUsername() + "님, 티켓 예매가 완료되었습니다!</h2>"
-                + "<hr>"
-                + "<p><strong>공연명:</strong> " + performance.getTitle() + "</p>"
-                + "<p><strong>공연시간:</strong> " + performance.getPerformanceStartAt() + " ~ " + performance.getPerformanceEndAt() + "</p>"
-                + "<p><strong>공연장소:</strong> " + performance.getLocation() + "</p>"
-                + "<p><strong>좌석:</strong> " + seat.getSeatSection() + " 구역, " + seat.getSeatNum() + "번</p>"
-                + "<p><strong>결제일시:</strong> " + sdf.format(payment.getPaymentDate()) + "</p>"
-                + "<p><strong>결제금액:</strong> " + String.format("%,d", payment.getPaymentAmount()) + "원</p>"
-                + "<br><p style='font-size:14px; color:#555;'>즐거운 공연 관람 되세요! 🎶</p>"
-                + "</div>"
-                + "</body></html>";
-
-        try {
-            helper.setFrom(new InternetAddress(MAIL_ADDRESS, MAIL_NAME));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+    private String readTemplate(String path) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new ClassPathResource(path).getInputStream(), StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            throw new RuntimeException("❌ 이메일 템플릿 읽기 실패: " + path, e);
         }
+    }
 
-        helper.setTo(user.getEmail());
-        helper.setSubject("[티켓 예매 완료] " + performance.getTitle() + " 공연");
-        helper.setText(content, true);
-
+    public void sendTicketMail(Long reservationId) {
         try {
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
+            User user = reservation.getUser();
+            Performance p = reservation.getPerformance();
+            Payment payment = paymentRepository.findByReservation(reservation)
+                    .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_PAYMENT));
+            Seat seat = seatRepository.findByPerformance(p);
+
+            // 템플릿 불러오기
+            String html = readTemplate("templates/email/ticket-success.html")
+                    .replace("{username}", user.getUsername())
+                    .replace("{title}", p.getTitle())
+                    .replace("{startAt}", p.getPerformanceStartAt().toString())
+                    .replace("{endAt}", p.getPerformanceEndAt().toString())
+                    .replace("{location}", p.getLocation())
+                    .replace("{seat}", seat.getSeatSection() + " 구역, " + seat.getSeatNum() + "번")
+                    .replace("{paymentDate}", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(payment.getPaymentDate()))
+                    .replace("{paymentAmount}", String.format("%,d", payment.getPaymentAmount()));
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(new InternetAddress(senderEmail, senderName));
+            helper.setTo(user.getEmail());
+            helper.setSubject("[티켓 예매 완료] " + p.getTitle() + " 공연");
+            helper.setText(html, true);
+
             mailSender.send(message);
-            System.out.println("✅ 메일 발송 성공: " + user.getEmail());
+            System.out.println("✅ 메일 전송 성공: " + user.getEmail());
+
         } catch (Exception e) {
-            System.err.println("❌ 메일 발송 실패: " + e.getMessage());
+            System.err.println("❌ 메일 전송 실패: " + e.getMessage());
         }
     }
 
@@ -129,7 +122,7 @@ public class EmailService {
                 + "</body></html>";
 
         try {
-            helper.setFrom(new InternetAddress(MAIL_ADDRESS, MAIL_NAME));
+            helper.setFrom(new InternetAddress(senderEmail, senderName));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -174,7 +167,7 @@ public class EmailService {
                 + "</body></html>";
 
         try {
-            helper.setFrom(new InternetAddress(MAIL_ADDRESS, MAIL_NAME));
+            helper.setFrom(new InternetAddress(senderEmail, senderName));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
