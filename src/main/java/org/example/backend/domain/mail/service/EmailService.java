@@ -9,6 +9,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat; // SimpleDateFormat
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date; // Date
 import jakarta.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
@@ -22,8 +23,8 @@ public class EmailService {
     @Value("${spring.mail.properties.mail.smtp.name}")
     private String MAIL_NAME;
 
-	@Autowired
-	private JavaMailSender mailSender;
+    @Autowired
+    private JavaMailSender mailSender;
 
     //티켓 예매 메일
     public void sendTicketMail(String email, String username, String title,
@@ -65,7 +66,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ 메일 발송 실패: " + e.getMessage());
         }
-	}
+    }
 
     //예매 오픈 알람 메일
     public void sendOpenAlarmMail(String email, String username, String title,
@@ -74,14 +75,15 @@ public class EmailService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String formattedDate = openDate.format(formatter);
 
         String content = "<html><body style='font-family: Arial, sans-serif; padding: 20px;'>"
                 + "<div style='max-width: 600px; margin: auto; border: 1px solid #ccc; border-radius: 10px; padding: 20px; background-color: #f9f9f9;'>"
                 + "<h2 style='color: #2c3e50;'>🎉 " + username + "님, " + title + " 공연이 오픈됩니다!</h2>"
                 + "<hr>"
-                + "<p><strong>오픈 일시:</strong> " + sdf.format(openDate) + "</p>"
-                + "<p><strong>예매하러 가기:</strong> <a href='" + reservationUrl + "' target='_blank'>여기를 클릭하세요</a></p>"
+                + "<p><strong>오픈 일시:</strong> " + formattedDate + "</p>"
+                + "<p><strong>예매하러 가기:</strong> <a href='" + reservationUrl + "' target='_blank'>포도피커 예매사이트</a></p>"
                 + "<br><p style='font-size:14px; color:#555;'>좋은 좌석은 빠르게 마감될 수 있으니 서둘러 주세요!</p>"
                 + "</div>"
                 + "</body></html>";
@@ -100,9 +102,9 @@ public class EmailService {
 
     //예매 취소 메일
     public void sendCancelTicketMail(String email, String username, String title,
-                               String performStartAt, String performEndAt, String location,
-                               String seatSection, String seatNum, int paymentAmount,
-                               Date paymentDate) throws MessagingException {
+                                     String performStartAt, String performEndAt, String location,
+                                     String seatSection, String seatNum, int paymentAmount,
+                                     Date paymentDate) throws MessagingException {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
