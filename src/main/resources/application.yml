@@ -1,4 +1,6 @@
 spring:
+  # config:
+  # import: aws-secretsmanager:secret/backend
   cloud:
     aws:
       region:
@@ -85,6 +87,7 @@ spring:
       port: 6379
 
   kafka:
+    # kafka 쓸때만 true로
     enabled: false
     bootstrap-servers: ${KAFKA_SERVER}
     consumer:
@@ -113,44 +116,44 @@ spring:
           starttls:
             enable: true
 
-  redis:
-    cluster:
-      nodes:
-        - redis-0.redis.redis-cluster.svc.cluster.local:6379
-        - redis-1.redis.redis-cluster.svc.cluster.local:6379
-        - redis-2.redis.redis-cluster.svc.cluster.local:6379
-        - redis-3.redis.redis-cluster.svc.cluster.local:6379
-        - redis-4.redis.redis-cluster.svc.cluster.local:6379
-        - redis-5.redis.redis-cluster.svc.cluster.local:6379
+redis:
+  cluster:
+    nodes:
+      - redis-0.redis.redis-cluster.svc.cluster.local:6379
+      - redis-1.redis.redis-cluster.svc.cluster.local:6379
+      - redis-2.redis.redis-cluster.svc.cluster.local:6379
+      - redis-3.redis.redis-cluster.svc.cluster.local:6379
+      - redis-4.redis.redis-cluster.svc.cluster.local:6379
+      - redis-5.redis.redis-cluster.svc.cluster.local:6379
 
-  recaptcha:
-    secret: ${RECAPTCHA_SECRET}
+recaptcha:
+  secret: ${RECAPTCHA_SECRET}
 
-  coolsms:
-    api:
-      key: ${COOLSMS_KEY}
-      secret: ${COOLSMS_SECRET}
+coolsms:
+  api:
+    key: ${COOLSMS_KEY}
+    secret: ${COOLSMS_SECRET}
 
-  petharmony:
-    phone:
-      number: ${PETHARMONY}
+petharmony:
+  phone:
+    number: ${PETHARMONY}
 
-  iamport:
-    api-key: ${IAMPORT-API-KEY}
-    api-secret: ${IAMPORT-API-SECRET}
+iamport:
+  api-key: ${IAMPORT-API-KEY}
+  api-secret: ${IAMPORT-API-SECRET}
 
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health,info,prometheus
-    prometheus:
-      metrics:
-        export:
-          enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
-  server:
-    port: 8080
+server:
+  port: 8080
 
 logging:
   level:
