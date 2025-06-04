@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OnboardingFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
@@ -29,9 +31,15 @@ public class OnboardingFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        // ✅ 온보딩 페이지는 필터 제외
-        if (uri.startsWith("/onboarding") || uri.startsWith("/auth/onboarding")
-                || uri.startsWith("/css") || uri.startsWith("/js") || uri.startsWith("/images")) {
+        // ✅ 온보딩 페이지 및 기타 정적 자원은 필터 제외
+        if (uri.startsWith("/onboarding")
+                || uri.startsWith("/auth/onboarding")
+                || uri.startsWith("/auth/login")
+                || uri.startsWith("/css")
+                || uri.startsWith("/js")
+                || uri.startsWith("/images")
+                || uri.startsWith("/favicon")
+                || uri.startsWith("/error")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -52,7 +60,8 @@ public class OnboardingFilter extends OncePerRequestFilter {
                 User user = userRepository.findByEmail(email).orElse(null);
 
                 if (user != null && !user.isOnboardingCompleted()) {
-                    response.sendRedirect("/onboarding");
+                    log.info("[OnboardingFilter] {} 온보딩 미완료 → 리디렉션", email);
+                    response.sendRedirect("/auth/onboarding");
                     return;
                 }
             }
