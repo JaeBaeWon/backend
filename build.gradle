@@ -50,6 +50,9 @@ dependencies {
     implementation 'net.nurigo:sdk:4.3.0'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
+    implementation 'org.springframework.security:spring-security-oauth2-client:5.7.4'
+
+    
 
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
