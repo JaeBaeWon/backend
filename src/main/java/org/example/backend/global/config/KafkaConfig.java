@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@ConditionalOnProperty(name = "kafka.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "spring.kafka.enabled", havingValue = "true")
 public class KafkaConfig {
 
     @Value("${KAFKA_SERVER}")
