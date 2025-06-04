@@ -83,7 +83,7 @@ public class PerformanceController {
     // ---------- MANAGER가 performance CRUD
 
     // 공연 등록
-    @PostMapping("manage")
+    @PostMapping("/manage")
     public ResponseEntity<?> createPerformance(@RequestBody PerformanceRequestDto dto,
                                                Authentication auth) {
         String email = auth.getName();
