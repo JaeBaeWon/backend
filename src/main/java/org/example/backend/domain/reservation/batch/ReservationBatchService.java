@@ -16,6 +16,7 @@ import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
 import org.example.backend.domain.reservation.repository.ReservationRepository;
 import org.example.backend.domain.seat.entity.Seat;
+import org.example.backend.domain.seat.entity.SeatStatus;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
@@ -48,6 +49,9 @@ public class ReservationBatchService {
             Seat seat = seatRepository.findById(dto.getSeatId())
                     .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_SEAT));
 
+            seat.setSeatStatus(SeatStatus.BOOKED);
+            seatRepository.save(seat);
+
             Reservation reservation = Reservation.builder()
                     .user(user)
                     .performance(performance)
@@ -70,6 +74,10 @@ public class ReservationBatchService {
 
             String key = "reservation:pending:" + dto.getUserId() + ":" + dto.getSeatId();
             redissonClient.getBucket(key).set("CONFIRMED", 1, TimeUnit.HOURS);
+
+            String resultKey = "reservation:result:" + dto.getTicketId();
+            redissonClient.getBucket(resultKey).set("CONFIRMED", 3, TimeUnit.MINUTES);
+
 
         } catch (Exception e) {
             e.printStackTrace(); // 또는 로그 처리
