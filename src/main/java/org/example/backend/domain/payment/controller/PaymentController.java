@@ -25,6 +25,24 @@ public class PaymentController {
     private final PaymentRepository paymentRepository;
     private final MemberService memberService;
 
+    @PostMapping("/verify-redis")
+    public ResponseEntity<?> verifyWithRedis(@RequestBody PaymentVerificationRequest request, Authentication auth) {
+
+        if (auth == null || !(auth.getPrincipal() instanceof CustomSecurityUserDetails userDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        request.setUserId(userDetails.getUserId());
+
+        try {
+            ReservationResponse response = paymentService.verifyAndQueueReservation(request);
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "❌ 결제 검증 실패: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest request, Authentication auth) {
 

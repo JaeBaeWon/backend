@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
         org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
-
 @EnableScheduling
 @EnableConfigurationProperties(RedisClusterProperties.class)
 public class BackendApplication {

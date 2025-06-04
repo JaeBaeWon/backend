@@ -11,7 +11,7 @@ import org.example.backend.domain.reservation.entity.Reservation;
 @AllArgsConstructor
 @Getter
 @Builder
-public class ReservationKafkaDto {
+public class ReservationMessageDto {
     private Long userId;
     private Long performanceId;
     private Long seatId;
@@ -23,8 +23,8 @@ public class ReservationKafkaDto {
     private int paymentAmount;
     private String payMethod;
 
-    public static ReservationKafkaDto of(Reservation reservation, Payment payment) {
-        return ReservationKafkaDto.builder()
+    public static ReservationMessageDto of(Reservation reservation, Payment payment) {
+        return ReservationMessageDto.builder()
                 .userId(reservation.getUser().getUserId())
                 .performanceId(reservation.getPerformance().getPerformanceId())
                 .seatId(reservation.getSeat().getSeatId())
