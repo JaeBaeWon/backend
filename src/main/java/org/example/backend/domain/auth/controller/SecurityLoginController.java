@@ -53,7 +53,6 @@ public class SecurityLoginController {
         }
     }
 
-
     // ✅ 로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
@@ -68,7 +67,7 @@ public class SecurityLoginController {
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResult.getRefreshToken())
                 .httpOnly(true)
-                .secure(false) //teseter 환경에서는 false (http 쓸 때만)
+                .secure(false) // teseter 환경에서는 false (http 쓸 때만)
                 .path("/")
                 .maxAge(3 * 24 * 60 * 60)
                 .sameSite("Strict")
@@ -79,8 +78,7 @@ public class SecurityLoginController {
                 "accessToken", loginResult.getAccessToken(),
                 "role", loginResult.getRole(),
                 "name", loginResult.getUserName(),
-                "onboardingComplete", memberService.isOnboardingComplete(loginResult.getEmail())
-        ));
+                "onboardingComplete", memberService.isOnboardingComplete(loginResult.getEmail())));
     }
 
     // ✅ 회원가입
@@ -101,7 +99,8 @@ public class SecurityLoginController {
     // ✅ 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication();
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
             request.getSession().invalidate();
@@ -112,18 +111,33 @@ public class SecurityLoginController {
     // ✅ 온보딩 정보 제출
     @PostMapping("/onboarding")
     public ResponseEntity<String> submitOnboardingInfo(@RequestBody OnboardingRequest request,
-                                                       Authentication authentication) {
-        if (!isAuthenticated(authentication)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            Authentication authentication) {
+        if (!isAuthenticated(authentication)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = null;
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            email = userDetails.getUsername(); // 로컬 로그인
+        } else if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User oAuth2User) {
+            email = oAuth2User.getAttribute("email"); // OAuth2 로그인
+        }
+
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일을 가져올 수 없습니다.");
+        }
 
         memberService.updateOnboardingInfo(
-                authentication.getName(),
+                email,
                 String.valueOf(request.getGender()),
                 request.getZipCode(),
                 request.getStreetAdr(),
                 request.getDetailAdr(),
                 request.getPhone(),
-                request.getBirthDate()
-        );
+                request.getBirthDate());
+
         return ResponseEntity.ok("온보딩 완료");
     }
 
@@ -145,8 +159,7 @@ public class SecurityLoginController {
     @PostMapping("/reset-password/send-code")
     public ResponseEntity<String> sendResetCode(@RequestBody ResetPasswordRequest request) {
         String msg = memberService.sendCertificationNumberForReset(
-                request.getEmail(), request.getPhone(), request.getBirthday()
-        );
+                request.getEmail(), request.getPhone(), request.getBirthday());
         return ResponseEntity.ok(msg);
     }
 
@@ -159,7 +172,8 @@ public class SecurityLoginController {
 
     // ✅ AccessToken 재발급
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshAccessToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<?> refreshAccessToken(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
         }
@@ -187,7 +201,5 @@ public class SecurityLoginController {
         boolean exists = memberService.checkLoginIdDuplicate(email);
         return ResponseEntity.ok(Map.<String, Object>of("available", !exists));
     }
-
-
 
 }
