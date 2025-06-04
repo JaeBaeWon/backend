@@ -3,6 +3,8 @@ package org.example.backend.domain.mail.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,5 +22,5 @@ public class EmailDto {
     private int paymentAmount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime paymentDate;
+    private Date paymentDate;
 }
