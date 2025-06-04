@@ -1,3 +1,7 @@
+package org.example.backend.domain.auth.config;
+
+import org.example.backend.domain.auth.config.CustomOauth2UserDetails;
+
 import org.example.backend.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
