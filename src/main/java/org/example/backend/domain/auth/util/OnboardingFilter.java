@@ -30,8 +30,9 @@ public class OnboardingFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
+        log.debug("[OnboardingFilter] 요청 URI: {}", uri);
 
-        // ✅ 온보딩 페이지 및 기타 정적 자원은 필터 제외
+        // ✅ 온보딩, 로그인, 정적 자원은 필터 제외
         if (uri.startsWith("/onboarding")
                 || uri.startsWith("/auth/onboarding")
                 || uri.startsWith("/auth/login")
@@ -40,31 +41,42 @@ public class OnboardingFilter extends OncePerRequestFilter {
                 || uri.startsWith("/images")
                 || uri.startsWith("/favicon")
                 || uri.startsWith("/error")) {
+            log.debug("[OnboardingFilter] 필터 제외 대상 URI → {}", uri);
             filterChain.doFilter(request, response);
             return;
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            log.debug("[OnboardingFilter] 인증된 사용자 존재");
+
             Object principal = auth.getPrincipal();
             String email = null;
 
             if (principal instanceof UserDetails userDetails) {
                 email = userDetails.getUsername();
             } else if (principal instanceof OAuth2User oAuth2User) {
-                email = oAuth2User.getAttribute("email"); // ✅ OAuth2 사용자 이메일
+                email = oAuth2User.getAttribute("email");
             }
+
+            log.debug("[OnboardingFilter] 인증된 사용자 이메일: {}", email);
 
             if (email != null) {
                 User user = userRepository.findByEmail(email).orElse(null);
+                if (user != null) {
+                    log.debug("[OnboardingFilter] 사용자 Onboarding 상태: {}", user.isOnboardingCompleted());
 
-                if (user != null && !user.isOnboardingCompleted()) {
-                    log.info("[OnboardingFilter] {} 온보딩 미완료 → 리디렉션", email);
-                    response.sendRedirect("/auth/onboarding");
-                    return;
+                    if (!user.isOnboardingCompleted()) {
+                        log.warn("[OnboardingFilter] {} 온보딩 미완료 → /auth/onboarding 으로 리디렉션", email);
+                        response.sendRedirect("/auth/onboarding");
+                        return;
+                    }
+                } else {
+                    log.warn("[OnboardingFilter] 이메일로 사용자 조회 실패: {}", email);
                 }
             }
+        } else {
+            log.debug("[OnboardingFilter] 인증된 사용자 없음 또는 anonymousUser");
         }
 
         filterChain.doFilter(request, response);
