@@ -1,10 +1,9 @@
 // src/main/java/org/example/backend/domain/mail/dto/EmailDto.java
 package org.example.backend.domain.mail.dto;
 
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -18,5 +17,5 @@ public class EmailDto {
     private String seatSection;
     private String seatNum;
     private int paymentAmount;
-    private Date paymentDate;
+    private LocalDateTime paymentDate;
 }
