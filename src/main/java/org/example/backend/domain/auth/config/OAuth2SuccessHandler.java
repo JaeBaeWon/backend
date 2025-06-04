@@ -38,20 +38,17 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         log.info("✅ OAuth2 로그인 성공: {}", email);
 
         User user = userRepository.findByEmail(email).orElse(null);
-
         if (user == null) {
             log.warn("❌ OAuth 로그인 성공했지만 사용자 DB에 없음: {}", email);
             response.sendRedirect("/auth/login?error=true");
             return;
         }
 
-        // ✅ Access Token 발급
+        // ✅ JWT 발급
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), email, user.getRole().name());
-
-        // ✅ Refresh Token 발급
         String refreshToken = jwtUtil.createRefreshToken(email);
 
-        // ✅ Refresh Token DB 저장 또는 갱신
+        // ✅ RefreshToken 저장/갱신
         refreshTokenRepository.findByEmail(email).ifPresentOrElse(existing -> {
             existing.setToken(refreshToken);
             existing.setExpiration(LocalDateTime.now().plusDays(14));
@@ -61,13 +58,23 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             refreshTokenRepository.save(token);
         });
 
-        // ✅ Refresh Token 쿠키로 전달 (HttpOnly)
+        // ✅ AccessToken 쿠키 전달
+        Cookie accessCookie = new Cookie("accessToken", accessToken);
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(true);
+        accessCookie.setPath("/");
+        accessCookie.setMaxAge(60 * 30); // 30분
+        accessCookie.setAttribute("SameSite", "None");
+
+        // ✅ RefreshToken 쿠키 전달
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true); // HTTPS 환경에서만 전달됨
+        refreshCookie.setSecure(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(60 * 60 * 24 * 14); // 14일
+        refreshCookie.setAttribute("SameSite", "None");
 
+        response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
 
         // ✅ 리디렉션 URL 생성
@@ -78,8 +85,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .toUriString();
 
         log.info("🔁 OAuth2 리디렉션 → {}", redirectUrl);
-
-        // ✅ 최종 리디렉션
         response.sendRedirect(redirectUrl);
     }
 }
