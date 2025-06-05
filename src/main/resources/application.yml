@@ -88,13 +88,18 @@ spring:
       add-mappings: true
       static-locations: classpath:/static/
 
+  servlet:
+    session:
+      cookie:
+        same-site: None
+        secure: true
+
   data:
     redis:
       host: ${REDIS_HOST}
       port: 6379
 
   kafka:
-    # kafka 쓸때만 true로
     enabled: false
     bootstrap-servers: ${KAFKA_SERVER}
     consumer:
