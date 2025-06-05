@@ -3,7 +3,10 @@ package org.example.backend.domain.auth.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.backend.domain.auth.entity.RefreshToken;
@@ -11,26 +14,16 @@ import org.example.backend.domain.auth.repository.RefreshTokenRepository;
 import org.example.backend.domain.auth.util.JWTUtil;
 import org.example.backend.domain.user.entity.User;
 import org.example.backend.domain.user.repository.UserRepository;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.util.Map;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @RequiredArgsConstructor
@@ -71,11 +64,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         refreshTokenRepository.save(new RefreshToken(email, refreshToken));
 
         // ✅ 쿠키 설정
-        response.addHeader("Set-Cookie", ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true).secure(true).path("/").maxAge(1800).sameSite("None").build().toString());
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true).secure(true).path("/").maxAge(1800).sameSite("None").build();
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true).secure(true).path("/").maxAge(60 * 60 * 24 * 14).sameSite("None").build();
 
-        response.addHeader("Set-Cookie", ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true).secure(true).path("/").maxAge(60 * 60 * 24 * 14).sameSite("None").build().toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        log.info("🍪 accessToken 쿠키 설정 완료");
+        log.info("🍪 refreshToken 쿠키 설정 완료");
 
         // ✅ OAuth Provider 정보로 동적 토큰 요청
         String tokenUri = providerResolver.getTokenUri(provider);
@@ -90,18 +88,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // ✅ 프론트로 onboarding 여부 포함 redirect
         String redirectUrl = UriComponentsBuilder
-                .fromUriString("https://app.podopicker.store/oauth-redirect")
+                .fromUriString(clientBaseUrl + "/oauth-redirect")
                 .queryParam("onboardingComplete", user.isOnboardingCompleted())
                 .build()
                 .toUriString();
 
-        // ✅ JSON 응답으로 리디렉션 URL 전달
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
         Map<String, Object> responseBody = Map.of("redirectUrl", redirectUrl);
         response.getWriter().write(objectMapper.writeValueAsString(responseBody));
+        response.getWriter().flush();
     }
 
     private String getAccessTokenFromProvider(String tokenUri, String code, String clientId, String clientSecret, String redirectUri) {
@@ -116,7 +114,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
         ResponseEntity<Map> response = restTemplate.postForEntity(tokenUri, request, Map.class);
 
         return (String) response.getBody().get("access_token");
