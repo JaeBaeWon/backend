@@ -13,39 +13,46 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     private final OAuth2AuthorizationRequestResolver delegate;
 
+    // 생성자에서 DefaultOAuth2AuthorizationRequestResolver를 위임합니다.
     public CustomAuthorizationRequestResolver(ClientRegistrationRepository repo, String baseUri) {
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(repo, baseUri);
     }
 
+    // 기본 resolve 메서드 구현 (HttpServletRequest만 받는 메서드)
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-        OAuth2AuthorizationRequest oauth2Request = delegate.resolve(request);
-        return customize(oauth2Request);
+        return customize(delegate.resolve(request)); // 기본 OAuth2AuthorizationRequest를 커스터마이즈하여 반환
     }
 
+    // 클라이언트 등록 ID를 사용하는 resolve 메서드 구현
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-        OAuth2AuthorizationRequest oauth2Request = delegate.resolve(request, clientRegistrationId);
-        return customize(oauth2Request);
+        return customize(delegate.resolve(request, clientRegistrationId)); // 기본 OAuth2AuthorizationRequest를 커스터마이즈하여 반환
     }
 
+    // OAuth2AuthorizationRequest를 커스터마이즈하는 메서드
     private OAuth2AuthorizationRequest customize(OAuth2AuthorizationRequest request) {
-        if (request == null) {
-            // 기본값으로 OAuth2AuthorizationRequest 생성
-            return OAuth2AuthorizationRequest.authorizationCode()
-                    .clientId("default") // 기본값 설정
-                    .authorizationUri("/oauth2/authorization") // 기본 URI 설정
-                    .redirectUri("/login/oauth2/code/naver") // 기본 redirectUri 설정
-                    .scope("openid", "profile") // 예시로 scope 설정
-                    .build();
+        if (request == null)
+            return null; // null 체크
+
+        // 기존 파라미터에 추가적인 파라미터를 넣기 위해 새로운 Map 생성
+        Map<String, Object> additionalParams = new HashMap<>(request.getAdditionalParameters());
+        additionalParams.put("prompt", "select_account"); // 항상 계정 선택 창 띄우기
+
+        // 'state' 파라미터를 확인하고 비어 있다면 기본값을 설정
+        if (!additionalParams.containsKey("state") || additionalParams.get("state") == null) {
+            additionalParams.put("state", generateState()); // 새로운 'state' 값을 생성하여 추가
         }
 
-        // OAuth2 요청에 추가 파라미터 추가
-        Map<String, Object> additionalParams = new HashMap<>(request.getAdditionalParameters());
-        additionalParams.put("prompt", "select_account");
-
+        // 커스터마이즈된 OAuth2AuthorizationRequest 반환
         return OAuth2AuthorizationRequest.from(request)
                 .additionalParameters(additionalParams)
                 .build();
+    }
+
+    // 'state' 파라미터 값을 생성하는 메서드
+    private String generateState() {
+        // 여기에 state 값을 생성하는 로직을 추가합니다. 예시로 UUID를 사용할 수 있습니다.
+        return java.util.UUID.randomUUID().toString();
     }
 }
