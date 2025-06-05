@@ -2,8 +2,10 @@ package org.example.backend.domain.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.example.backend.domain.user.entity.User;
 import java.time.LocalDateTime;
+
+import org.example.backend.domain.user.entity.User;
 
 @Entity
 @Getter
@@ -29,5 +31,11 @@ public class RefreshToken {
         this.email = email;
         this.token = token;
         this.expiration = LocalDateTime.now().plusDays(3); // 기본 3일 유효
+    }
+
+    public RefreshToken(User user, String token, LocalDateTime expiration) {
+        this.email = user.getEmail(); // user로부터 이메일 추출
+        this.token = token;
+        this.expiration = expiration;
     }
 }

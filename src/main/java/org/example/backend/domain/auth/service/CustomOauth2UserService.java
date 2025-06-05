@@ -6,11 +6,14 @@ import org.example.backend.domain.user.entity.UserRole;
 import org.example.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
@@ -20,6 +23,8 @@ import java.util.UUID;
 public class CustomOauth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final OAuth2AuthorizedClientService authorizedClientService;
+    private final RestTemplate restTemplate;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -28,9 +33,11 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
 
         String provider = userRequest.getClientRegistration().getRegistrationId();
 
+        // `token-uri`와 `user-info-uri`를 통해 사용자 정보 처리
         OAuth2UserInfo oAuth2UserInfo = null;
+        String tokenUri = userRequest.getClientRegistration().getProviderDetails().getTokenUri();
+        String userInfoUri = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri();
 
-        // ✅ 소셜 제공자별 분기
         if ("google".equals(provider)) {
             log.info("구글 로그인");
             oAuth2UserInfo = new GoogleUserDetails(oAuth2User.getAttributes());
@@ -58,7 +65,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
                     .username(user_name)
                     .provider(provider)
                     .providerId(providerId)
-                    .password(UUID.randomUUID().toString()) // ✅ null 방지용 임의 문자열 설정
+                    .password(UUID.randomUUID().toString()) // null 방지용 임의 문자열 설정
                     .role(UserRole.CONSUMER)
                     .build();
 
