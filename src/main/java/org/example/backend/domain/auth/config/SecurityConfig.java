@@ -14,12 +14,7 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
-
 import jakarta.servlet.SessionCookieConfig;
-
-import jakarta.servlet.SessionCookieConfig;
-import org.apache.catalina.Context;
-import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -50,7 +45,6 @@ public class SecurityConfig {
                                         config.setSecure(true);
                                         config.setName("JSESSIONID");
                                         config.setPath("/");
-                                        config.setDomain("app.podopicker.store");
                                 }
                         });
                 });
