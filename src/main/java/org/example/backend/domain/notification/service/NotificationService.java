@@ -44,7 +44,7 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 9 * * *")
     public void sendPerformanceNotifications() throws MessagingException {
         LocalDateTime now = LocalDateTime.now();
         List<Notification> notifications = notificationRepository.findAllWithUserAndPerformance();
