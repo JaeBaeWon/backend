@@ -1,6 +1,6 @@
 package org.example.backend.domain.auth.config;
 
-import jakarta.servlet.ServletException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,12 +29,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
-    private final String clientBaseUrl = "https://podopicker.store";
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String clientBaseUrl = "https://app.podopicker.store";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
             HttpServletResponse response,
-            Authentication authentication) throws IOException, ServletException {
+            Authentication authentication) throws IOException {
 
         CustomOauth2UserDetails customUser = (CustomOauth2UserDetails) authentication.getPrincipal();
         String email = customUser.getUsername();
@@ -44,13 +44,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
             log.warn("❌ OAuth 로그인 성공했지만 사용자 DB에 없음: {}", email);
-            response.sendRedirect("/auth/login?error=true");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not found");
             return;
         }
 
+        // JWT 발급
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), email, user.getRole().name());
         String refreshToken = jwtUtil.createRefreshToken(email);
 
+        // RefreshToken 저장
+        refreshTokenRepository.save(new RefreshToken(user.getEmail(), refreshToken));
+
+        // 쿠키 설정
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
                 .secure(true)
@@ -67,19 +72,17 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .sameSite("None")
                 .build();
 
-        response.addHeader("Set-Cookie", accessCookie.toString());
-        response.addHeader("Set-Cookie", refreshCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        refreshTokenRepository.save(new RefreshToken(user.getEmail(), refreshToken));
-
-        // 사용자 정보 로깅 (선택적)
+        // 사용자 정보 로깅 (선택)
         String provider = customUser.getProvider();
         String code = customUser.getAuthorizationCode();
         String tokenUri = getTokenUri(provider);
         String userInfoUri = getUserInfoUri(provider);
         String clientId = getClientId(provider);
         String clientSecret = getClientSecret(provider);
-        String redirectUri = "https://app.podopicker.store/login/oauth2/code/" + provider;
+        String redirectUri = clientBaseUrl + "/login/oauth2/code/" + provider;
 
         if (tokenUri != null && userInfoUri != null) {
             String providerAccessToken = getAccessTokenFromProvider(tokenUri, code, clientId, clientSecret,
@@ -88,14 +91,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             log.info("🌐 {} 사용자 정보: {}", provider, userInfo);
         }
 
-        String redirectUrl = UriComponentsBuilder
-                .fromUriString(clientBaseUrl + "/oauth-redirect")
-                .queryParam("onboardingComplete", user.isOnboardingCompleted())
-                .build()
-                .toUriString();
+        // 리디렉션 URL 생성
+        String redirectUrl = clientBaseUrl + "/oauth-redirect?onboardingComplete=" + user.isOnboardingCompleted();
 
-        log.info("🔁 OAuth2 리디렉션 → {}", redirectUrl);
-        response.sendRedirect(redirectUrl);
+        // ✅ JSON 응답으로 리디렉션 URL 전달
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+
+        Map<String, Object> responseBody = Map.of("redirectUrl", redirectUrl);
+        response.getWriter().write(objectMapper.writeValueAsString(responseBody));
     }
 
     private String getTokenUri(String provider) {
