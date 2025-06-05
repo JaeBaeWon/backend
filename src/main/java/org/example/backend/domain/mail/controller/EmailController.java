@@ -24,9 +24,9 @@ public class EmailController {
 
 
     //예매 취소 메일
-    @PostMapping("/sendCancel")
-    public String sendCancelMail(@RequestBody EmailDto dto) throws MessagingException {
-        emailService.sendCancelTicketMail(dto);
+    @PostMapping("/cancel/{reservationId}")
+    public String sendCancelMail(@PathVariable Long reservationId) throws MessagingException {
+        emailService.sendCancelTicketMail(reservationId);
         return "티켓 예매 취소 메일 발송 완료!";
     }
 }
