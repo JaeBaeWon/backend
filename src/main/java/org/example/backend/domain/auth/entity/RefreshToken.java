@@ -5,8 +5,6 @@ import lombok.*;
 import org.example.backend.domain.user.entity.User;
 import java.time.LocalDateTime;
 
-import org.example.backend.domain.user.entity.User;
-
 @Entity
 @Getter
 @Setter

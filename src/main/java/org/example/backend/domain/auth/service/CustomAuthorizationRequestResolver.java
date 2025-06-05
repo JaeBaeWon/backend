@@ -32,8 +32,9 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     // OAuth2AuthorizationRequest를 커스터마이즈하는 메서드
     private OAuth2AuthorizationRequest customize(OAuth2AuthorizationRequest request) {
-        if (request == null)
+        if (request == null) {
             return null; // null 체크
+        }
 
         // 기존 파라미터에 추가적인 파라미터를 넣기 위해 새로운 Map 생성
         Map<String, Object> additionalParams = new HashMap<>(request.getAdditionalParameters());
@@ -52,7 +53,7 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     // 'state' 파라미터 값을 생성하는 메서드
     private String generateState() {
-        // 여기에 state 값을 생성하는 로직을 추가합니다. 예시로 UUID를 사용할 수 있습니다.
+        // UUID를 사용하여 안전한 'state' 값 생성
         return java.util.UUID.randomUUID().toString();
     }
 }

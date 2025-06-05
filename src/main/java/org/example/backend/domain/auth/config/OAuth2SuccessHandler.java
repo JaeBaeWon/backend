@@ -19,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -29,8 +30,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate; // RestTemplate을 주입받아 사용
-    private final String clientBaseUrl = "https://podopicker.store"; // 리디렉션 기본 URL
+    private final RestTemplate restTemplate;
+    private final String clientBaseUrl = "https://podopicker.store";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -78,7 +79,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String userInfoUri = getUserInfoUri(provider);
 
         if (tokenUri != null && userInfoUri != null) {
-            String accessTokenFromProvider = getAccessTokenFromProvider(tokenUri);
+            String accessTokenFromProvider = getAccessTokenFromProvider(tokenUri, customUser.getAuthorizationCode());
             OAuth2User oAuth2User = getUserInfoFromProvider(userInfoUri, accessTokenFromProvider);
             log.info("사용자 정보: {}", oAuth2User.getAttributes());
         }
@@ -115,8 +116,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         return null;
     }
 
-    private String getAccessTokenFromProvider(String tokenUri) {
-        return restTemplate.postForObject(tokenUri, null, String.class);
+    private String getAccessTokenFromProvider(String tokenUri, String authorizationCode) {
+        // 요청 파라미터로 전달된 authorizationCode를 이용해 액세스 토큰을 요청합니다.
+        // 예를 들어, RestTemplate을 사용하여 POST 요청을 보내고 액세스 토큰을 얻습니다.
+
+        // 필요한 파라미터를 설정하고 요청을 보냅니다.
+        Map<String, String> params = new HashMap<>();
+        params.put("code", authorizationCode);
+        params.put("client_id", "your-client-id");
+        params.put("client_secret", "your-client-secret");
+        params.put("redirect_uri", "your-redirect-uri");
+
+        return restTemplate.postForObject(tokenUri, params, String.class);
     }
 
     private OAuth2User getUserInfoFromProvider(String userInfoUri, String accessToken) {

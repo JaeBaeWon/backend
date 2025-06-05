@@ -13,10 +13,12 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
     private final User user;
     private final Map<String, Object> attributes;
     private String provider;
+    private final String authorizationCode;
 
-    public CustomOauth2UserDetails(User user, Map<String, Object> attributes) {
+    public CustomOauth2UserDetails(User user, Map<String, Object> attributes, String authorizationCode) {
         this.user = user;
         this.attributes = attributes;
+        this.authorizationCode = authorizationCode;
     }
 
     public String getProvider() {
@@ -70,5 +72,9 @@ public class CustomOauth2UserDetails implements UserDetails, OAuth2User {
 
     public User getUser() {
         return user;
+    }
+
+    public String getAuthorizationCode() {
+        return authorizationCode;
     }
 }

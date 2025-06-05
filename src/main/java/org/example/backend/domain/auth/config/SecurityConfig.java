@@ -3,7 +3,6 @@ package org.example.backend.domain.auth.config;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.auth.util.OnboardingFilter;
 import org.example.backend.domain.auth.util.JWTFilter;
-import org.example.backend.domain.auth.util.JWTUtil;
 import org.example.backend.domain.auth.service.CustomAuthorizationRequestResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +20,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final JWTUtil jwtUtil;
         private final ClientRegistrationRepository clientRegistrationRepository;
         private final JWTFilter jwtFilter;
         private final OnboardingFilter onboardingFilter;
@@ -45,7 +43,6 @@ public class SecurityConfig {
 
                 // Spring Form Login 제거 (우리는 SPA 기반 처리)
                 http.formLogin(form -> form.disable());
-
 
                 OAuth2AuthorizationRequestResolver customResolver = new CustomAuthorizationRequestResolver(
                                 clientRegistrationRepository, "/oauth2/authorization");
