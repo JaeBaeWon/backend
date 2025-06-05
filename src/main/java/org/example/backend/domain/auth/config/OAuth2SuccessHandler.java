@@ -72,8 +72,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .sameSite("None")
                 .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        // ⚠️ addHeader → setHeader로 변경해 둘 다 명시적으로 설정
+        response.setHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        log.info("🍪 accessToken 쿠키 설정 완료");
+        log.info("🍪 refreshToken 쿠키 설정 완료");
 
         // 사용자 정보 로깅 (선택)
         String provider = customUser.getProvider();
@@ -101,6 +105,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         Map<String, Object> responseBody = Map.of("redirectUrl", redirectUrl);
         response.getWriter().write(objectMapper.writeValueAsString(responseBody));
+        response.getWriter().flush(); // ⛳ flush로 명시적 종료
     }
 
     private String getTokenUri(String provider) {
