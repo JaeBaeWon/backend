@@ -97,14 +97,24 @@ public class PerformanceController {
     public ResponseEntity<?> getMyPerformances(Authentication auth) {
         try {
             String email = auth.getName();
-            User manager = memberService.getUserByEmail(email); // 여기서 에러 터짐
-            List<Performance> performances = performanceService.getMyPerformances(manager);
+            User manager = memberService.getUserByEmail(email);
+            List<PerformRes> performances = performanceService.getMyPerformances(manager);
             return ResponseEntity.ok(performances);
         } catch (CustomException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
         }
+    }
+
+    // 관리자 전용 공연 상세 조회
+    @GetMapping("/manage/{id}")
+    public ResponseEntity<PerformDetailRes> getMyPerformanceDetail(@PathVariable Long id,
+                                                                   Authentication auth) {
+        String email = auth.getName();
+        User manager = memberService.getUserByEmail(email);
+        PerformDetailRes detail = performanceService.getMyPerformanceDetail(id, manager);
+        return ResponseEntity.ok(detail);
     }
 
     // 공연 수정
