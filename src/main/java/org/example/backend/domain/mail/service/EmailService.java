@@ -44,7 +44,6 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
-    private final SeatRepository seatRepository;
 
     private String readTemplate(String path) {
         try (BufferedReader reader = new BufferedReader(
@@ -59,19 +58,19 @@ public class EmailService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
         User user = reservation.getUser();
-        Performance p = reservation.getPerformance();
+        Performance performance = reservation.getPerformance();
+        Seat seat = reservation.getSeat();
         Payment payment = paymentRepository.findByReservation(reservation)
                 .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_PAYMENT));
-        Seat seat = seatRepository.findByPerformance(p);
 
         try {
             // 템플릿 불러오기
             String html = readTemplate("templates/ticket-success.html")
                     .replace("{username}", user.getUsername())
-                    .replace("{title}", p.getTitle())
-                    .replace("{startAt}", p.getPerformanceStartAt().toString())
-                    .replace("{endAt}", p.getPerformanceEndAt().toString())
-                    .replace("{location}", p.getLocation())
+                    .replace("{title}", performance.getTitle())
+                    .replace("{startAt}", performance.getPerformanceStartAt().toString())
+                    .replace("{endAt}", performance.getPerformanceEndAt().toString())
+                    .replace("{location}", performance.getLocation())
                     .replace("{seat}", seat.getSeatSection() + " 구역, " + seat.getSeatNum() + "번")
                     .replace("{paymentDate}", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(payment.getPaymentDate()))
                     .replace("{paymentAmount}", String.format("%,d", payment.getPaymentAmount()));
@@ -81,7 +80,7 @@ public class EmailService {
 
             helper.setFrom(new InternetAddress(senderEmail, senderName));
             helper.setTo(user.getEmail());
-            helper.setSubject("[티켓 예매 완료] " + p.getTitle() + " 공연");
+            helper.setSubject("[티켓 예매 완료] " + performance.getTitle() + " 공연");
             helper.setText(html, true);
 
             javaMailSender.send(message);

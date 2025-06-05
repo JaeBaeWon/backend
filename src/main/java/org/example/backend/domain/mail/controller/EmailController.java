@@ -39,7 +39,7 @@ public class EmailController {
 
     //티켓 예매 메일
     @PostMapping("/send/{reservationId}")
-    public String sendMail(@PathVariable Long reservationId, Authentication auth) throws MessagingException {
+    public String sendMail(@PathVariable Long reservationId) throws MessagingException {
 
         String response = emailService.sendTicketMail(reservationId);  // 사용자 정보를 함께 전달
 
