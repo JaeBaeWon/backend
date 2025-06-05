@@ -16,16 +16,20 @@ public class KakaoUserDetails implements OAuth2UserInfo {
 
     @Override
     public String getProviderId() {
-        return attributes.get("id").toString();
+        return attributes.get("id") != null ? attributes.get("id").toString() : null;
     }
 
     @Override
     public String getEmail() {
-        return (String) ((Map) attributes.get("kakao_account")).get("email");
+        // kakao_account이 Map으로 존재하고 email이 그 안에 있을 경우 안전하게 처리
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        return kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
     }
 
     @Override
     public String getName() {
-        return (String) ((Map) attributes.get("properties")).get("nickname");
+        // properties가 Map으로 존재하고 nickname이 그 안에 있을 경우 안전하게 처리
+        Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
+        return properties != null ? (String) properties.get("nickname") : null;
     }
 }
