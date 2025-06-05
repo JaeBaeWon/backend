@@ -20,9 +20,9 @@ import java.util.Date;                                         // Date import
 public class EmailController {
 
     private final EmailService emailService;
-    private final JavaMailSender mailSender;
+    //private final JavaMailSender mailSender;
 
-    @PostMapping("/send/test")
+    /*@PostMapping("/send/test")
     public String testMail() throws Exception {
         MimeMessage msg = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
@@ -34,16 +34,16 @@ public class EmailController {
 
         mailSender.send(msg);
         return "✅ 발송 요청 완료!";
-    }
+    }*/
 
 
     //티켓 예매 메일
     @PostMapping("/send/{reservationId}")
     public String sendMail(@PathVariable Long reservationId, Authentication auth) throws MessagingException {
 
-        emailService.sendTicketMail(reservationId);  // 사용자 정보를 함께 전달
+        String response = emailService.sendTicketMail(reservationId);  // 사용자 정보를 함께 전달
 
-        return "티켓 예매 메일 발송 완료!";
+        return "티켓 예매 메일 발송 완료!" + response;
     }
 
 
