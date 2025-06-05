@@ -14,11 +14,11 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
 
         config.setAllowedOriginPatterns(List.of(
-                "https://*.podopicker.store",  // 와일드카드 사용 가능
-                "https://podopicker.store"
-        ));
+                "https://*.podopicker.store", // 와일드카드 사용 가능
+                "https://podopicker.store"));
 
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
