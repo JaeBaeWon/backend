@@ -14,12 +14,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
-
 import jakarta.servlet.SessionCookieConfig;
-
-import jakarta.servlet.SessionCookieConfig;
-import org.apache.catalina.Context;
-import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
@@ -36,18 +32,19 @@ public class SecurityConfig {
 
         @Bean
         public WebServerFactoryCustomizer<TomcatServletWebServerFactory> sameSiteCookieConfig() {
-                return factory -> factory.addContextCustomizers((Context context) -> {
-                        context.setCookieProcessor(new org.apache.tomcat.util.http.Rfc6265CookieProcessor()); // 쿠키 처리기
-                                                                                                              // 설정
+                return factory -> factory.addContextCustomizers(context -> {
+                        Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
+                        cookieProcessor.setSameSiteCookies("None"); // ✅ Tomcat 전용 설정
+                        context.setCookieProcessor(cookieProcessor);
+
                         context.addLifecycleListener(event -> {
-                                if (event.getType().equals("configure_start")) {
-                                        SessionCookieConfig sessionCookieConfig = context.getServletContext()
+                                if ("configure_start".equals(event.getType())) {
+                                        SessionCookieConfig config = context.getServletContext()
                                                         .getSessionCookieConfig();
-                                        sessionCookieConfig.setHttpOnly(true);
-                                        sessionCookieConfig.setSecure(true);
-                                        sessionCookieConfig.setName("JSESSIONID");
-                                        sessionCookieConfig.setPath("/");
-                                        sessionCookieConfig.setDomain("app.podopicker.store");
+                                        config.setHttpOnly(true);
+                                        config.setSecure(true);
+                                        config.setName("JSESSIONID");
+                                        config.setPath("/");
                                 }
                         });
                 });
