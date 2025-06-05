@@ -56,7 +56,8 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-            provider: kakao # 이 부분을 추가하여 provider-id를 명시적으로 설정
+            provider: kakao # 이 부분을 추가하여 provider 설정
+
           naver:
             client-id: ${NAVER_CLIENT_ID}
             client-secret: ${NAVER_CLIENT_SECRET}
