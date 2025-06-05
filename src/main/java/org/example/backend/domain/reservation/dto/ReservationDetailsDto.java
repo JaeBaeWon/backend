@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ReservationDetailsDto {
-
+    private Long reservationId;
     private String userName;               // 예매자
     private String ticketId;              // 예매번호
     private LocalDateTime performanceStartAt; // 이용일
@@ -45,6 +45,7 @@ public class ReservationDetailsDto {
         Performance performance = reservation.getPerformance();
 
         return ReservationDetailsDto.builder()
+                .reservationId(reservation.getReservationId())
                 .userName(reservation.getUser().getUsername())
                 .ticketId(reservation.getTicketId())
                 .performanceStartAt(performance.getPerformanceStartAt())
