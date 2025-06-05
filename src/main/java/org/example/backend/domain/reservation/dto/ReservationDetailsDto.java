@@ -13,6 +13,7 @@ import org.example.backend.domain.reservation.entity.Reservation;
 import org.example.backend.domain.reservation.entity.ReservationStatus;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @NoArgsConstructor
@@ -28,6 +29,7 @@ public class ReservationDetailsDto {
     private PerformanceStatus performanceStatus;
 
     private PayType payType;
+    private Date paymentDate;
     private PaymentStatus paymentStatus;
     private Long seatId;
     private String seatInfo;
@@ -50,7 +52,7 @@ public class ReservationDetailsDto {
                 .ticketId(reservation.getTicketId())
                 .performanceStartAt(performance.getPerformanceStartAt())
                 .location(performance.getLocation())
-                .reservationDay(reservation.getReservationDate())
+                .paymentDate(payment.getPaymentDate())
                 .performanceStatus(performance.getPerformanceStatus())
                 .payType(payment.getPayType())
                 .paymentStatus(payment.getPaymentStatus())
