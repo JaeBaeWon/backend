@@ -39,7 +39,7 @@ public class SecurityConfig {
                                                 "/auth/find-id/**", "/auth/reset-password/**", "/auth/check/**",
                                                 "/oauth2/**", "/health", "/error", "/performance/**",
                                                 "/auth/check-duplicate", "/seat/**", "/actuator/**",
-                                                "/auth/onboarding", "/index.html", "/static/**", "/email/send/**")
+                                                "/auth/onboarding", "/index.html", "/static/**", "/email/**")
                                 .permitAll()
                                 .anyRequest().authenticated());
 

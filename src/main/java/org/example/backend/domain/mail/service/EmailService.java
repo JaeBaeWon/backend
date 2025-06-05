@@ -16,10 +16,8 @@ import org.example.backend.domain.reservation.repository.ReservationRepository;
 import org.example.backend.domain.seat.entity.Seat;
 import org.example.backend.domain.seat.repository.SeatRepository;
 import org.example.backend.domain.user.entity.User;
-import org.example.backend.domain.user.repository.UserRepository;
 import org.example.backend.global.exception.CustomException;
 import org.example.backend.global.exception.ExceptionContent;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -30,7 +28,6 @@ import jakarta.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat; // SimpleDateFormat
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date; // Date
 import jakarta.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
 
@@ -44,7 +41,7 @@ public class EmailService {
     @Value("${spring.mail.properties.mail.smtp.name}")
     private String senderName;
 
-    private final JavaMailSender mailSender;
+    private final JavaMailSender javaMailSender;
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
     private final SeatRepository seatRepository;
@@ -58,16 +55,16 @@ public class EmailService {
         }
     }
 
-    public void sendTicketMail(Long reservationId) {
-        try {
-            Reservation reservation = reservationRepository.findById(reservationId)
-                    .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
-            User user = reservation.getUser();
-            Performance p = reservation.getPerformance();
-            Payment payment = paymentRepository.findByReservation(reservation)
-                    .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_PAYMENT));
-            Seat seat = seatRepository.findByPerformance(p);
+    public String sendTicketMail(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_RESERVATION));
+        User user = reservation.getUser();
+        Performance p = reservation.getPerformance();
+        Payment payment = paymentRepository.findByReservation(reservation)
+                .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_PAYMENT));
+        Seat seat = seatRepository.findByPerformance(p);
 
+        try {
             // 템플릿 불러오기
             String html = readTemplate("templates/ticket-success.html")
                     .replace("{username}", user.getUsername())
@@ -79,7 +76,7 @@ public class EmailService {
                     .replace("{paymentDate}", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(payment.getPaymentDate()))
                     .replace("{paymentAmount}", String.format("%,d", payment.getPaymentAmount()));
 
-            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(new InternetAddress(senderEmail, senderName));
@@ -87,12 +84,14 @@ public class EmailService {
             helper.setSubject("[티켓 예매 완료] " + p.getTitle() + " 공연");
             helper.setText(html, true);
 
-            mailSender.send(message);
+            javaMailSender.send(message);
             System.out.println("✅ 메일 전송 성공: " + user.getEmail());
 
         } catch (Exception e) {
             System.err.println("❌ 메일 전송 실패: " + e.getMessage());
         }
+
+        return user.getEmail();
     }
 
 
@@ -101,7 +100,7 @@ public class EmailService {
                                   LocalDateTime openDate,
                                   String reservationUrl) throws MessagingException {
 
-        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         String username = notification.getUser().getUsername();
@@ -130,13 +129,13 @@ public class EmailService {
         helper.setSubject("[공연 오픈 알림] " + title + " 공연 예매 시작 안내");
         helper.setText(content, true);
 
-        mailSender.send(message);
+        javaMailSender.send(message);
     }
 
     //예매 취소 메일
     public void sendCancelTicketMail(EmailDto dto) throws MessagingException {
 
-        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         String username = dto.getUsername();
@@ -175,7 +174,7 @@ public class EmailService {
         helper.setSubject("[티켓 예매 취소] " + title + " 예매 취소 안내");
         helper.setText(content, true);
 
-        mailSender.send(message);
+        javaMailSender.send(message);
     }
 }
 
