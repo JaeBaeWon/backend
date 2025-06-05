@@ -33,7 +33,7 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: https://app.podopicker.store/login/oauth2/code/google
+            redirect-uri: https://podopicker.store/login/oauth2/code/google
 
             client-name: Google
             authorization-grant-type: authorization_code
