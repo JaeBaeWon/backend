@@ -169,6 +169,3 @@ logging:
     org.springframework.web: DEBUG
   pattern:
     console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss}","level":"%p","thread":"%t","logger":"%c","message":"%m"}'
-
-rest-api-gateway:
-  url: ${REST_API_GATEWAY_URL}
