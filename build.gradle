@@ -60,7 +60,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     //DB
-    runtimeOnly 'com.mysql:mysql-connector-java:8.0.29'  // Updated version
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
