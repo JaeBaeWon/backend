@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RestApiGatewayConfig {
 
-    @Value("${rest-api-gateway.url}")
+    @Value("${rest-api-gateway.url:}")
     private String url;
 
     public String getUrl() {
