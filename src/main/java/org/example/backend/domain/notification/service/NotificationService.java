@@ -44,7 +44,7 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void sendPerformanceNotifications() throws MessagingException {
         LocalDateTime now = LocalDateTime.now();
         List<Notification> notifications = notificationRepository.findAllWithUserAndPerformance();
@@ -59,7 +59,7 @@ public class NotificationService {
                 continue;
             }
 
-            if (isDaysBefore(performOpenAt, now, 7) || isDaysBefore(performOpenAt, now, 1)) {
+            if (isDaysBefore(performOpenAt, now, 10) || isDaysBefore(performOpenAt, now, 1)) {
                 // 메일 발송
                 emailService.sendOpenAlarmMail(notification, performOpenAt, "https://podopicker.store/"
                 );
