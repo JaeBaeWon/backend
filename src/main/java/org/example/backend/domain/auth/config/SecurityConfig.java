@@ -15,6 +15,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import jakarta.servlet.SessionCookieConfig;
+
+import jakarta.servlet.SessionCookieConfig;
+import org.apache.catalina.Context;
+import org.apache.catalina.startup.Tomcat;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -25,6 +33,25 @@ public class SecurityConfig {
         private final OnboardingFilter onboardingFilter;
         private final CorsConfigurationSource corsConfigurationSource;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
+        @Bean
+        public WebServerFactoryCustomizer<TomcatServletWebServerFactory> sameSiteCookieConfig() {
+                return factory -> factory.addContextCustomizers((Context context) -> {
+                        context.setCookieProcessor(new org.apache.tomcat.util.http.Rfc6265CookieProcessor()); // 쿠키 처리기
+                                                                                                              // 설정
+                        context.addLifecycleListener(event -> {
+                                if (event.getType().equals("configure_start")) {
+                                        SessionCookieConfig sessionCookieConfig = context.getServletContext()
+                                                        .getSessionCookieConfig();
+                                        sessionCookieConfig.setHttpOnly(true);
+                                        sessionCookieConfig.setSecure(true);
+                                        sessionCookieConfig.setName("JSESSIONID");
+                                        sessionCookieConfig.setPath("/");
+                                        sessionCookieConfig.setDomain("app.podopicker.store");
+                                }
+                        });
+                });
+        }
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

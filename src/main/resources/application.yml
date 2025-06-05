@@ -88,12 +88,6 @@ spring:
       add-mappings: true
       static-locations: classpath:/static/
 
-  servlet:
-    session:
-      cookie:
-        same-site: None
-        secure: true
-
   data:
     redis:
       host: ${REDIS_HOST}
