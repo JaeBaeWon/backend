@@ -9,4 +9,7 @@ import java.util.List;
 
 public interface PerformanceRepository extends JpaRepository<Performance, Long>, PerformanceCustomRepository {
     List<Performance> findByUser(User user);
+
+    // 조회수 기준 내림차순 정렬
+    List<Performance> findAllByOrderByViewsDesc();
 }

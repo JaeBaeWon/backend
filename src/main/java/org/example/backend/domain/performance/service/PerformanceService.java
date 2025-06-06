@@ -1,6 +1,7 @@
 package org.example.backend.domain.performance.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.domain.performance.dto.PerformanceRankingDto;
 import org.example.backend.domain.performance.dto.PerformanceRequestDto;
 import org.example.backend.domain.performance.dto.response.PerformDetailRes;
 import org.example.backend.domain.performance.dto.response.PerformRes;
@@ -90,6 +91,24 @@ public class PerformanceService {
                 .orElseThrow(() -> new CustomException(NOT_FOUND_PERFORMANCE));
 
         return performance;
+    }
+
+    // 랭킹 데이터 가져오기
+    public List<PerformanceRankingDto> getPerformanceRanking() {
+        return performanceRepository.findAllByOrderByViewsDesc().stream()
+                .map(p -> new PerformanceRankingDto(
+                        p.getTitle(),
+                        p.getCategory(),
+                        p.getPerformanceStartAt(),
+                        p.getPerformanceEndAt(),
+                        p.getPerformanceOpenAt(),
+                        p.getLocation(),
+                        p.getPerformanceImg(),
+                        p.getPrice(),
+                        p.getViews(),
+                        p.getPerformanceStatus()
+                ))
+                .toList();
     }
 
 

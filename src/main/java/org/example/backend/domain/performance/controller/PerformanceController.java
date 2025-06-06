@@ -2,6 +2,7 @@ package org.example.backend.domain.performance.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.auth.service.MemberService;
+import org.example.backend.domain.performance.dto.PerformanceRankingDto;
 import org.example.backend.domain.performance.dto.PerformanceRequestDto;
 import org.example.backend.domain.performance.dto.response.PerformDetailRes;
 import org.example.backend.domain.performance.dto.response.PerformRes;
@@ -79,6 +80,11 @@ public class PerformanceController {
         return ResponseEntity.ok().body(performDetailRes);
     }
 
+    // 랭킹 조회
+    @GetMapping("/ranking")
+    public List<PerformanceRankingDto> getRanking() {
+        return performanceService.getPerformanceRanking();
+    }
 
     // ---------- MANAGER가 performance CRUD
 
