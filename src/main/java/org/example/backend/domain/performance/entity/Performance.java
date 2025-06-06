@@ -67,7 +67,6 @@ public class Performance {
         this.performanceEndAt = dto.getPerformanceEndAt();
         this.performanceOpenAt = dto.getPerformanceOpenAt();
         this.location = dto.getLocation();
-        this.performanceImg = dto.getPerformanceImg();
         this.price = dto.getPrice();
         this.totalSeats = dto.getTotalSeats();
         this.remainSeats = dto.getTotalSeats();
