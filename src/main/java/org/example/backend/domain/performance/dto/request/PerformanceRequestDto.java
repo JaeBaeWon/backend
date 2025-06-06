@@ -1,4 +1,4 @@
-package org.example.backend.domain.performance.dto;
+package org.example.backend.domain.performance.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

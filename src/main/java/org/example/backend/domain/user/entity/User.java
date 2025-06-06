@@ -28,7 +28,8 @@ public class User {
     @Column(name = "user_name", nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    // @Column(nullable = false)
+    @Builder.Default
     private boolean onboardingCompleted = false;
 
     private String provider;
@@ -39,7 +40,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(nullable = false)
+    // @Column(nullable = false)
+    @Builder.Default
     private boolean isDeleted = false;
 
     private String zipCode; // 우편번호
