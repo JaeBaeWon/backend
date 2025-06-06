@@ -40,7 +40,7 @@ public class ManagerController {
         User manager = memberService.getUserByEmail(email);
 
         // ✅ 변수명 명확화
-        String uploadedImageUrl = s3Uploader.upload(image, "performance");
+        String uploadedImageUrl = s3Uploader.upload(image, "perform_images");
         dto.setPerformanceImg(uploadedImageUrl); // ✅ 전체 URL 저장
 
         managerService.createPerformance(dto, manager);
