@@ -236,9 +236,12 @@ public class MemberService {
     public void softDeleteUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다."));
-        user.setDeleted(true); // 논리 삭제
+
+        user.setDeleted(true);
+        userRepository.save(user); // 저장 명시
+
         refreshTokenRepository.findByEmail(email)
-                .ifPresent(refreshTokenRepository::delete); // 리프레시 토큰 제거로 로그아웃 처리
+                .ifPresent(refreshTokenRepository::delete);
     }
 
     public List<MyPageReservationDto> getReservationsForUser(String email) {
