@@ -32,19 +32,16 @@ public class ManagerController {
     private final ManagerService managerService;
 
     // 공연 등록
-    @PostMapping(value = "/manage", consumes = "multipart/form-data")
-    public ResponseEntity<?> createPerformance(@RequestPart("dto") PerformanceRequestDto dto,
-                                               @RequestPart("image") MultipartFile image,
-                                               Authentication auth) {
+    @PostMapping(value = "/manage/json", consumes = "application/json")
+    public ResponseEntity<?> createPerformanceJson(@RequestBody PerformanceRequestDto dto, Authentication auth) {
         String email = auth.getName();
         User manager = memberService.getUserByEmail(email);
 
-        // ✅ 변수명 명확화
-        String uploadedImageUrl = s3Uploader.upload(image, "performance");
-        dto.setPerformanceImg(uploadedImageUrl); // ✅ 전체 URL 저장
+        // 기본 이미지 대체
+        dto.setPerformanceImg("default.jpg");
 
         managerService.createPerformance(dto, manager);
-        return ResponseEntity.ok("공연 등록 완료");
+        return ResponseEntity.ok("공연 등록 완료 (JSON)");
     }
 
 
