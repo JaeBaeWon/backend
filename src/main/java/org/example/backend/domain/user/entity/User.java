@@ -39,9 +39,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    private String zipCode;     // 우편번호
-    private String streetAdr;   // 도로명 주소
-    private String detailAdr;   // 상세 주소
+    @Column(nullable = false)
+    private boolean isDeleted = false;
+
+    private String zipCode; // 우편번호
+    private String streetAdr; // 도로명 주소
+    private String detailAdr; // 상세 주소
 
     private String phone;
 
@@ -49,7 +52,8 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
-    public void updateOnboardingInfo(Gender gender, String zipCode, String streetAdr, String detailAdr, String phone, LocalDate birthday) {
+    public void updateOnboardingInfo(Gender gender, String zipCode, String streetAdr, String detailAdr, String phone,
+            LocalDate birthday) {
         this.gender = gender;
         this.zipCode = zipCode;
         this.streetAdr = streetAdr;

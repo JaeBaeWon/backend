@@ -75,7 +75,12 @@ public class MemberService {
     public LoginResponseDto login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .filter(m -> bCryptPasswordEncoder.matches(loginRequest.getPassword(), m.getPassword()))
-                .orElseThrow(() -> new CustomException(ExceptionContent.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다."));
+
+        // ✅ 탈퇴한 사용자 로그인 차단
+        if (user.isDeleted()) {
+            throw new CustomException("탈퇴한 사용자입니다.");
+        }
 
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
         refreshTokenRepository.findByEmail(user.getEmail()).ifPresentOrElse(existing -> {
@@ -87,8 +92,13 @@ public class MemberService {
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId(), user.getEmail(), user.getRole().name());
 
-        return LoginResponseDto.builder().email(user.getEmail()).userName(user.getUsername())
-                .role(user.getRole().name()).accessToken(accessToken).refreshToken(refreshToken).build();
+        return LoginResponseDto.builder()
+                .email(user.getEmail())
+                .userName(user.getUsername())
+                .role(user.getRole().name())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     public ReservationDetailsDto getReservationByIdAndLoginId(Long reservationId, String email) {
@@ -220,6 +230,15 @@ public class MemberService {
                 .filter(member -> request.getBirthday().equals(member.getBirthday()))
                 .map(member -> FindIdResponseDto.builder().email(member.getEmail()).message("✅ 인증번호가 확인되었습니다.").build())
                 .orElse(FindIdResponseDto.builder().email(null).message("❌ 인증번호가 일치하지 않거나, 만료되었습니다.").build());
+    }
+
+    @Transactional
+    public void softDeleteUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다."));
+        user.setDeleted(true); // 논리 삭제
+        refreshTokenRepository.findByEmail(email)
+                .ifPresent(refreshTokenRepository::delete); // 리프레시 토큰 제거로 로그아웃 처리
     }
 
     public List<MyPageReservationDto> getReservationsForUser(String email) {
