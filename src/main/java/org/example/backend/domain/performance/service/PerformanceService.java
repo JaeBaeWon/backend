@@ -77,11 +77,6 @@ public class PerformanceService {
         return PerformDetailRes.of(performance, remainingSeats);
     }
 
-    //공연 전체 조회
-    private List<Performance> getAllPerform() {
-        return performanceRepository.findAll();
-    }
-
     //공연 단건 조회
     private Performance getPerformById(Long performId) {
         Performance performance = performanceRepository.findById(performId)

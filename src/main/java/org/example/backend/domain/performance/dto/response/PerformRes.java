@@ -54,6 +54,7 @@ public class PerformRes {
                 .category(performance.getCategory())
                 .performStartAt(performance.getPerformanceStartAt())
                 .performEndAt(performance.getPerformanceEndAt())
+                .performanceOpenAt(performance.getPerformanceOpenAt())
                 .location(performance.getLocation())
                 .performImg(performance.getPerformanceImg())
                 .price(performance.getPrice())
@@ -63,4 +64,5 @@ public class PerformRes {
                 .reservationDay(performance.getReservationDay())
                 .build();
     }
+
 }
