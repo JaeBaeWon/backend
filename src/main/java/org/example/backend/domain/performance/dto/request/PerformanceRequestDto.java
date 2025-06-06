@@ -18,7 +18,6 @@ public class PerformanceRequestDto {
     private LocalDateTime performanceEndAt;
     private LocalDateTime performanceOpenAt;
     private String location;
-    private String performanceImg;
     private int price;
     private int totalSeats;
     private PerformanceStatus performanceStatus;

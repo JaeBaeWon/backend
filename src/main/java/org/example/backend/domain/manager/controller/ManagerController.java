@@ -44,7 +44,6 @@ public class ManagerController {
         return ResponseEntity.ok("공연 등록 완료 (JSON)");
     }
 
-
     // 관리자별 공연 목록 조회
     @GetMapping("/manage/my")
     public ResponseEntity<?> getMyPerformances(Authentication auth) {
