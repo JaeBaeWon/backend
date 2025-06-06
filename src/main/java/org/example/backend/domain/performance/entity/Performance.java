@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.backend.domain.performance.dto.PerformanceRequestDto;
+import org.example.backend.domain.performance.dto.request.PerformanceRequestDto;
 import org.example.backend.domain.user.entity.User;
 
 
