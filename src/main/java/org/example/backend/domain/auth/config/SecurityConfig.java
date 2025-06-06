@@ -6,6 +6,7 @@ import org.example.backend.domain.auth.util.JWTFilter;
 import org.example.backend.domain.auth.service.CustomAuthorizationRequestResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -34,7 +35,7 @@ public class SecurityConfig {
         public WebServerFactoryCustomizer<TomcatServletWebServerFactory> sameSiteCookieConfig() {
                 return factory -> factory.addContextCustomizers(context -> {
                         Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
-                        cookieProcessor.setSameSiteCookies("None"); // ✅ Tomcat 전용 설정
+                        cookieProcessor.setSameSiteCookies("None");
                         context.setCookieProcessor(cookieProcessor);
 
                         context.addLifecycleListener(event -> {
@@ -62,11 +63,13 @@ public class SecurityConfig {
                                                 "/oauth2/**", "/health", "/error", "/performance/**",
                                                 "/auth/check-duplicate", "/seat/**", "/actuator/**",
                                                 "/auth/onboarding", "/index.html", "/static/**", "/email/**", "/config")
-
                                 .permitAll()
+
+                                // ✅ DELETE 요청 명시적으로 허용
+                                .requestMatchers(HttpMethod.DELETE, "/auth/withdraw").authenticated()
+
                                 .anyRequest().authenticated());
 
-                // Spring Form Login 제거 (우리는 SPA 기반 처리)
                 http.formLogin(form -> form.disable());
 
                 OAuth2AuthorizationRequestResolver customResolver = new CustomAuthorizationRequestResolver(
@@ -75,7 +78,7 @@ public class SecurityConfig {
                 http.oauth2Login(auth -> auth
                                 .authorizationEndpoint(config -> config.authorizationRequestResolver(customResolver))
                                 .successHandler(oAuth2SuccessHandler)
-                                .failureUrl("/") // ✅ 로그인 실패 시 SPA 진입점으로 이동
+                                .failureUrl("/")
                                 .permitAll());
 
                 http.logout(auth -> auth
