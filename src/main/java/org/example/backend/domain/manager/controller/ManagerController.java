@@ -19,29 +19,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
 public class ManagerController {
 
-    private final S3Uploader s3Uploader;
     private final MemberService memberService;
     private final ManagerService managerService;
 
     // 공연 등록
-    @PostMapping(value = "/manage", consumes = "application/json")
-    public ResponseEntity<?> createPerformanceJson(@RequestBody PerformanceRequestDto dto, Authentication auth) {
+    @PostMapping("/manage")
+    public ResponseEntity<?> createPerformance(@RequestBody PerformanceRequestDto dto,
+                                               Authentication auth) {
         String email = auth.getName();
-        User manager = memberService.getUserByEmail(email);
-
-        // 기본 이미지 대체
-        dto.setPerformanceImg("default.jpg");
-
+        User manager = memberService.getUserByEmail(email); // 또는 userRepository.findByEmail
         managerService.createPerformance(dto, manager);
-        return ResponseEntity.ok("공연 등록 완료 (JSON)");
+        return ResponseEntity.ok("공연 등록 완료");
     }
 
     // 관리자별 공연 목록 조회

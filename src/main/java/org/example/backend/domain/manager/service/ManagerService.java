@@ -34,7 +34,6 @@ public class ManagerService {
                 .performanceEndAt(dto.getPerformanceEndAt())
                 .performanceOpenAt(dto.getPerformanceOpenAt())
                 .location(dto.getLocation())
-                .performanceImg(dto.getPerformanceImg())
                 .price(dto.getPrice())
                 .totalSeats(dto.getTotalSeats())
                 .remainSeats(dto.getTotalSeats())
