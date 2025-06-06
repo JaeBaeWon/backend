@@ -1,10 +1,6 @@
 package org.example.backend.domain.manager.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.domain.performance.dto.request.PerformanceRequestDto;
@@ -13,7 +9,6 @@ import org.example.backend.domain.performance.dto.response.PerformRes;
 import org.example.backend.domain.performance.entity.Performance;
 import org.example.backend.domain.performance.repository.PerformanceRepository;
 import org.example.backend.domain.user.entity.User;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,7 +44,6 @@ public class ManagerService {
                 .build();
         return performanceRepository.save(performance);
     }
-
 
     // 공연 상세조회
     public PerformDetailRes getMyPerformanceDetail(Long id, User manager) {
