@@ -202,4 +202,41 @@ public class SecurityLoginController {
         return ResponseEntity.ok(Map.<String, Object>of("available", !exists));
     }
 
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<String> withdraw(
+            Authentication authentication,
+            HttpServletResponse response) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        String email = authentication.getName();
+
+        // ✅ 유저 논리 삭제 + 리프레시 토큰 제거
+        memberService.softDeleteUser(email);
+
+        // ✅ 클라이언트 쿠키 삭제 지시 (accessToken & refreshToken)
+        ResponseCookie deleteAccessToken = ResponseCookie.from("accessToken", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        ResponseCookie deleteRefreshToken = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        response.addHeader("Set-Cookie", deleteAccessToken.toString());
+        response.addHeader("Set-Cookie", deleteRefreshToken.toString());
+
+        return ResponseEntity.ok("✅ 회원 탈퇴가 완료되었습니다.");
+    }
+
 }

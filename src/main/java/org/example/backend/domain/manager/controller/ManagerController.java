@@ -32,7 +32,7 @@ public class ManagerController {
     private final ManagerService managerService;
 
     // 공연 등록
-    @PostMapping(value = "/manage/json", consumes = "application/json")
+    @PostMapping(value = "/manage", consumes = "application/json")
     public ResponseEntity<?> createPerformanceJson(@RequestBody PerformanceRequestDto dto, Authentication auth) {
         String email = auth.getName();
         User manager = memberService.getUserByEmail(email);
