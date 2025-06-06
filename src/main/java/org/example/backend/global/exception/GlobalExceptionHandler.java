@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.backend.global.exception.dto.ExceptionRes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -55,6 +56,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(new ExceptionRes("해당 요청에 대한 API가 존재하지 않습니다. 엔드 포인트를 확인해주시길 바랍니다."));
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ExceptionRes> handleUsernameNotFoundException(UsernameNotFoundException e) {
+        log.warn("UsernameNotFoundException: {}", e.getMessage());
+        return ResponseEntity
+                .status(401)
+                .body(new ExceptionRes("존재하지 않거나 탈퇴된 사용자입니다."));
     }
 
     @ExceptionHandler
