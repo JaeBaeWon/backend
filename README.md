@@ -43,6 +43,13 @@
 
 ---
 
+## 백엔드 아키텍처
+
+<img width="1798" height="906" alt="image" src="https://github.com/user-attachments/assets/82880c66-54a6-410f-9ed7-dbe33988b72e" />
+
+
+---
+
 ## 🛠️ 주요 기능
 
 ### ✅ 피싱 방지 프로세스
